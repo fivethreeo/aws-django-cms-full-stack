@@ -7,7 +7,7 @@ A full django stack with django cms
 * aws managed memcache
 * aws managed postgres db
 
-WIP: Working on making a HA setup in cloudformation/vpc-nat-ha.
+WIP: Working on making a HA setup in cloudformation/vpc-nat-ha, using aws managed nat if possible.
 
 To deploy existing app in django/
 =================================
