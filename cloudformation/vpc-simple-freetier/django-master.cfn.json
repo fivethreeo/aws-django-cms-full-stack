@@ -1,0 +1,307 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Provisions two substacks: a VPC and the django-resources stack, which launches the testproject Beanstalk app and its dependencies into the VPC.",
+
+  "Parameters": {
+    "VPCTemplateKey": {
+      "Description": "The key of the template for the VPC scaffold substack",
+      "Type": "String",
+      "Default": "public/vpc/django-vpc.cfn.json"
+    },
+    "ResourcesTemplateKey": {
+      "Description": "The key of the template for the EB resources and application substack",
+      "Type": "String",
+      "Default": "public/vpc/django-resources.cfn.json"
+    },
+    "AppTemplateKey": {
+      "Description": "The key of the template for that contains the EB app and env embedded in ResourcesTemplateKey",
+      "Type": "String",
+      "Default": "public/vpc/django-elasticbeanstalk.cfn.json"
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the Elastic Beanstalk host",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "SSHFrom": {
+      "Description": "Lockdown SSH access to the bastion host (default can be accessed from anywhere)",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "VPCAvailabilityZone1": {
+      "Description": "One of two Availability Zones that will be used to create subnets.",
+      "Type": "AWS::EC2::AvailabilityZone::Name"
+    },
+    "VPCAvailabilityZone2": {
+      "Description": "Two of two Availability Zones that will be used to create subnets. Must be different than VPCAvailabilityZone2.",
+      "Type": "AWS::EC2::AvailabilityZone::Name"
+    },
+    "DatabaseUser": {
+      "Default": "dbadmin",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account name",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DatabasePassword": {
+      "Default": "0bee082a464",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account password",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "DatabaseName": {
+      "Description": "The name of the database",
+      "Type": "String",
+      "Default": "django"
+    },
+    "AssetsBucketPrefix": {
+      "Description": "The prefix of the S3 bucket where the application ZIP is located. A region-specific suffix will be appended, e.g. AssetsBucketPrefix-us-east-1.",
+      "Type": "String",
+      "Default" : "aws-django-"
+    },
+    "AppZIPFile": {
+      "Description": "The location of the application ZIP file in the AssetsBucket",
+      "Type": "String",
+      "Default": "public/django.zip"
+    },
+    "InstanceType": {
+      "Description": "The type of instance to use for EB app servers",
+      "Type": "String",
+      "Default" : "t2.micro",
+      "AllowedValues" : [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m4.10xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "g2.2xlarge",
+        "g2.8xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge",
+        "d2.xlarge",
+        "d2.2xlarge",
+        "d2.4xlarge",
+        "d2.8xlarge"
+       ]
+    },
+    "DatabaseInstanceType" : {
+      "Description" : "RDS DB instance type",
+      "Default": "db.t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "db.t2.micro",
+        "db.t2.small",
+        "db.t2.medium",
+        "db.t2.large",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.r3.large",
+        "db.r3.xlarge",
+        "db.r3.2xlarge",
+        "db.r3.4xlarge",
+        "db.r3.8xlarge"
+      ]
+    },
+    "CacheInstanceType" : {
+      "Description" : "RDS DB instance type",
+      "Default": "cache.t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "cache.t2.micro",
+        "cache.t2.small",
+        "cache.t2.medium",
+        "cache.m3.medium",
+        "cache.m3.large",
+        "cache.m3.xlarge",
+        "cache.m3.2xlarge",
+        "cache.r3.large",
+        "cache.r3.xlarge",
+        "cache.r3.2xlarge",
+        "cache.r3.4xlarge",
+        "cache.r3.8xlarge"
+      ]
+    },
+    "ApplicationName": {
+      "Description": "The name of the Elastic Beanstalk Application",
+      "Type": "String",
+      "Default": "django-VPC"
+    },
+    "DeveloperName": {
+      "Type": "String",
+      "Default": "Default"
+    },
+    "EnvironmentName": {
+      "Type": "String",
+      "Default": "Dev-VPC"
+    },
+    "ElasticsearchDomainCustomResourceLambdaName": {
+      "Type": "String",
+      "Default": "cfn-elasticsearch-domain-0-1-1",
+      "Description": "The name of the ElasticseachDomain Lambda you deployed to test this stack."
+    },
+    "ElasticsearchDomainName": {
+      "Type": "String",
+      "Default": "djangosearch",
+      "Description": "The name of the Elasticsearch Domain you will launch",
+      "AllowedPattern": "[a-z][a-z0-9\\-]+"
+    },
+    "ElasticsearchDomainClusterNodeCount": {
+      "Type": "Number",
+      "Default": "1",
+      "Description": "Number of nodes to build into the Elasticsearch Domain Cluster."
+    },
+    "ElasticsearchDomainClusterNodeSize": {
+      "Type": "String",
+      "Description": "Size of nodes to build into the Elasticsearch Domain Cluster.",
+      "Default": "t2.micro.elasticsearch",
+      "AllowedValues": [
+        "m3.medium.elasticsearch",
+        "m3.large.elasticsearch",
+        "m3.xlarge.elasticsearch",
+        "m3.2xlarge.elasticsearch",
+        "t2.micro.elasticsearch",
+        "t2.small.elasticsearch",
+        "t2.medium.elasticsearch",
+        "r3.large.elasticsearch",
+        "r3.xlarge.elasticsearch",
+        "r3.2xlarge.elasticsearch",
+        "r3.4xlarge.elasticsearch",
+        "r3.8xlarge.elasticsearch",
+        "i2.xlarge.elasticsearch",
+        "i2.2xlarge.elasticsearch"
+      ]
+    }
+  },
+
+  "Resources": {
+    "VPCScaffold" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "VPCTemplateKey" }]]},
+        "Parameters" : {
+          "KeyName": { "Ref" : "KeyName" },
+          "SSHFrom": { "Ref" : "SSHFrom" },
+          "VPCAvailabilityZone1": { "Ref" : "VPCAvailabilityZone1" },
+          "VPCAvailabilityZone2": { "Ref" : "VPCAvailabilityZone2" }
+        }
+      }
+    },
+    "AppResources" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "ResourcesTemplateKey" }]]},
+        "Parameters" : {
+          "DatabaseUser": { "Ref" : "DatabaseUser" },
+          "DatabasePassword": { "Ref" : "DatabasePassword" },
+          "DatabaseName": { "Ref" : "DatabaseName" },
+          "DatabaseInstanceType": { "Ref" : "DatabaseInstanceType" },      
+          "CacheInstanceType": { "Ref" : "CacheInstanceType" },                  
+          "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
+          "ElasticsearchDomainCustomResourceLambdaName": { "Ref" : "ElasticsearchDomainCustomResourceLambdaName" },
+          "ElasticsearchDomainName": { "Ref" : "ElasticsearchDomainName" },
+          "ElasticsearchDomainClusterNodeCount": { "Ref" : "ElasticsearchDomainClusterNodeCount" },
+          "ElasticsearchDomainClusterNodeSize": { "Ref" : "ElasticsearchDomainClusterNodeSize" },
+          "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
+          "PrivateSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"]
+          },
+          "PrivateSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"]
+          },
+          "PublicSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet1"]
+          },
+          "PublicSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet2"]
+          }
+        }
+      }
+    },
+    "App1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "AppTemplateKey" }]]},
+        "Parameters" : {
+          "DeveloperName"     : { "Ref" : "DeveloperName"},
+          "ApplicationName"  : { "Ref" : "ApplicationName" },
+          "EnvironmentName"     : { "Ref" : "EnvironmentName"},
+          "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
+          "MemCacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCacheEndpoint" ]},
+          "MemCachePort"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCachePort" ]},
+          "RedisCacheId"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.RedisCacheId" ]},
+          "ElasticsearchDomainEndpoint" : { "Fn::GetAtt" : [ "AppResources", "Outputs.ElasticsearchDomainEndpoint" ]},
+          "DatabaseName"     : { "Ref" : "DatabaseName"},
+          "DatabaseUser"     : { "Ref" : "DatabaseUser"},
+          "DatabasePassword" : { "Ref" : "DatabasePassword" },
+          "DatabaseHost"     : { "Fn::GetAtt" : [ "AppResources", "Outputs.DatabaseHost" ]},
+          "DatabasePort" : { "Fn::GetAtt" : [ "AppResources", "Outputs.DatabasePort" ]},
+          "MediaBucket"  : { "Fn::GetAtt" : [ "AppResources", "Outputs.MediaBucket" ]},
+          "AssetsBucketPrefix"  : { "Ref" : "AssetsBucketPrefix" },
+          "AppZIPFile"           : { "Ref" : "AppZIPFile"},
+          "KeyName"          : { "Ref" : "KeyName" },
+          "InstanceType"     : { "Ref" : "InstanceType"},
+          "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
+          "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
+          "PrivateSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"]
+          },
+          "PrivateSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"]
+          },
+          "PublicSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet1"]
+          },
+          "PublicSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet2"]
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Description": "URL of the AWS Elastic Beanstalk Environment",
+      "Value": {
+        "Fn::GetAtt": ["App1", "Outputs.URL"]
+      }
+    }
+  }
+}

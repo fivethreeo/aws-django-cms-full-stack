@@ -1,0 +1,243 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Deploy the testproject application to Elastic Beanstalk. This template is designed to be executed by the parent django-resources stack.",
+
+  "Parameters": {
+    "RdsDbId": {
+      "Type": "String"
+    },
+    "AppBucket": {
+      "Type": "String"
+    },
+    "CacheEndpoint": {
+      "Type": "String"
+    },
+    "CachePort": {
+      "Type": "String"
+    },
+    "DatabaseUser": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "DatabasePassword": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "AssetsBucketPrefix": {
+      "Type": "String"
+    },
+    "AppZIPFile": {
+      "Type": "String"
+    },
+    "KeyName": {
+      "Type": "String"
+    },
+    "InstanceType": {
+      "Type": "String"
+    },
+    "ApplicationName": {
+      "Type": "String"
+    },
+    "DatabaseName": {
+      "Type": "String"
+    },
+    "DeveloperName": {
+      "Type": "String",
+      "Default": "Default"
+    },
+    "EnvironmentName": {
+      "Type": "String",
+      "Default": "Dev-VPC"
+    },
+    "InstanceSecurityGroup": {
+      "Type": "String"
+    },
+    "VPCId" : {
+      "Type" : "String",
+      "Description" : "The VPC ID to launch the application into."
+    },
+    "PublicSubnets" : {
+      "Type" : "String",
+      "Description" : "A comma-delimited list of public VPC subnets. ELBs will be launched into this subnet."
+    },
+    "PrivateSubnets" : {
+      "Type" : "String",
+      "Description" : "A comma-delimited list of private VPC subnets. Auto Scaling and RDS will be launched into this subnet."
+    }
+  },
+
+  "Resources": {
+    "Application": {
+      "Type": "AWS::ElasticBeanstalk::Application",
+      "Properties": {
+        "Description": {
+          "Ref": "ApplicationName"
+        },
+        "ApplicationName" : { "Fn::Join" : ["-", [{ "Ref": "ApplicationName" }, {"Ref": "DeveloperName"}]] },
+        "ConfigurationTemplates": [{
+          "TemplateName": "DefaultConfiguration",
+          "Description": "Default Configuration Version 1.0 - with SSH access",
+          "SolutionStackName": "64bit Amazon Linux running Python 2.7",
+          "OptionSettings": [{
+            "Namespace": "aws:elasticbeanstalk:application:environment",
+            "OptionName": "AWS_REGION",
+            "Value": { "Ref": "AWS::Region" }
+          }, {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "EC2KeyName",
+            "Value": { "Ref" : "KeyName" }
+          },
+          {
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "VPCId",
+            "Value": { "Ref": "VPCId"
+            }
+          },
+          {
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "Subnets",
+            "Value": { "Ref" : "PrivateSubnets" }
+          },
+          {
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "ELBSubnets",
+            "Value": { "Ref" : "PublicSubnets" }
+          },
+          {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "SecurityGroups",
+            "Value": { "Ref": "InstanceSecurityGroup" }
+          },
+          {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "IamInstanceProfile",
+            "Value": { "Ref": "EbAppInstanceProfile" }
+          },
+          {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "InstanceType",
+            "Value": { "Ref": "InstanceType" }
+          }]
+        }],
+        "ApplicationVersions": [{
+          "VersionLabel": "Initial Version",
+          "Description": "Initial Version",
+          "SourceBundle": {
+            "S3Bucket": {
+              "Fn::Join": ["", [{
+                "Ref": "AssetsBucketPrefix"
+              }, {
+                "Ref": "AWS::Region"
+              }]]
+            },
+            "S3Key": {
+              "Ref": "AppZIPFile"
+            }
+          }
+        }]
+      }
+    },
+    "Environment": {
+      "Type": "AWS::ElasticBeanstalk::Environment",
+      "Properties": {
+        "ApplicationName": { "Ref": "Application"},
+        "EnvironmentName" : { "Fn::Join" : ["-", [ { "Ref": "EnvironmentName" }, {"Ref": "DeveloperName"}]] },
+        "Description": "Default Environment",
+        "VersionLabel": "Initial Version",
+        "TemplateName": "DefaultConfiguration",
+        "OptionSettings": [{
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "RDS_INSTANCEID",
+          "Value": {
+            "Ref": "RdsDbId"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "RDS_DATABASE",
+          "Value": {
+            "Ref": "DatabaseName"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "RDS_USERNAME",
+          "Value": {
+            "Ref": "DatabaseUser"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "RDS_PASSWORD",
+          "Value": {
+            "Ref": "DatabasePassword"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "CACHE_ENDPOINT",
+          "Value": {
+            "Ref": "CacheEndpoint"
+          }
+        },{
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "CACHE_PORT",
+          "Value": {
+            "Ref": "CachePort"
+          }
+        }]
+      }
+    },
+    "EbAppRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "RolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "EbApp",
+        "PolicyDocument": {
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+          }]
+        },
+        "Roles": [{
+          "Ref": "EbAppRole"
+        }]
+      }
+    },
+    "EbAppInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{
+          "Ref": "EbAppRole"
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Description": "URL of the AWS Elastic Beanstalk Environment",
+      "Value": {
+        "Fn::Join": ["", ["http://", {
+          "Fn::GetAtt": ["Environment", "EndpointURL"]
+        }]]
+      }
+    }
+  }
+}

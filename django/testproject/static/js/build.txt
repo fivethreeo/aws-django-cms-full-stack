@@ -1,0 +1,11 @@
+
+main.js
+----------------
+D:/dev/GitHub/testproject/bower_components/requirejs/require.js
+D:/dev/GitHub/testproject/bower_components/jquery/dist/jquery.js
+D:/dev/GitHub/testproject/bower_components/underscore/underscore.js
+D:/dev/GitHub/testproject/bower_components/bootstrap/dist/js/bootstrap.js
+D:/dev/GitHub/testproject/bower_components/moment/moment.js
+D:/dev/GitHub/testproject/bower_components/moment/locale/nb.js
+D:/dev/GitHub/testproject/bower_components/bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js
+main.js

@@ -1,0 +1,661 @@
+@import "mixins/base.less";
+@import "mixins/_bootstrap-datetimepicker.less";
+
+html, body {
+    height: 100%;
+    width: 100%;
+
+    /* Remove any browser-default margins. */
+    margin: 0;
+}
+ul.rot li {
+    /*background: url(polaroid.svg);*/
+    -moz-background-size: 100% 100%;
+    background-size: cover;
+    display:inline-block;
+    /*padding:2% 2% 3% 3%;*/
+    list-style: none;
+    -moz-transform: rotate(5deg);
+    -webkit-transform: rotate(5deg) ;
+    -o-transform: rotate(5deg);
+    -ms-transform:rotate(5deg); 
+    transform:rotate(5deg);
+}
+ul.rot li:nth-child(odd) {-moz-transform: rotate(-10deg);-webkit-transform: rotate(-10deg) ;-o-transform: rotate(-10deg);-ms-transform:rotate(-10deg); transform:rotate(-10deg);}
+ul.rot li:nth-child(3n+3) {-moz-transform: rotate(3deg);-webkit-transform: rotate(3deg) ;-o-transform: rotate(3deg);-ms-transform:rotate(3deg); transform:rotate(3deg);}
+
+.square-box{
+    position: relative;
+    overflow: hidden;
+    background: #4679BD;
+}
+.square-box:before{
+    content: "";
+    display: block;
+    padding-top: 100%;
+}
+.square-content{
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    color: white;
+}
+.square-content div {
+   display: table;
+   width: 100%;
+   height: 100%;
+}
+.square-content a {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+    color: white;
+    font-size: 1.5em;
+}
+
+.pad-150px {
+   padding-top: 150px;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+@-webkit-keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+
+.arrow {
+  width: 100%;
+  position: absolute;
+  bottom: 30px;
+}
+@media (max-height: 667) {
+  .arrow { display: none; }
+}
+.glyphicon-chevron-down {
+  color: white;
+  font-size: 80px;
+  display:block;
+  text-align:center;
+}
+
+.glyphicon-chevron-down:active,
+.glyphicon-chevron-down:focus {
+  color: white;
+  text-decoration: none;
+}
+.glyphicon-chevron-down:hover {
+  text-decoration: none;
+}
+.bounce {
+  animation: bounce 2s infinite;
+}
+div.first {
+  .clearfix();
+  padding-top: 90px;
+  margin-bottom: 0;
+}
+article {
+  min-height: 400px;
+  background: #ffffff;
+}
+footer h2 {
+  color: lighten(@gray-light, 40%);
+}
+footer p {
+  color: lighten(@gray-light, 40%);
+}
+.navbar-brand img { height: 116px; width: auto; position: relative; margin-top: -15px; transition: all 2s ease-in;}
+
+@media (min-width: @screen-xs-max) {
+
+#hjem {
+    /* Height and width fallback for older browsers. */
+    height: 100%;
+    width: 100%;
+
+    /* Set the height to match that of the viewport. */
+    height: 100vh;
+
+    /* Set the width to match that of the viewport. */
+    width: 100vw;
+
+    /* Remove any browser-default margins. */
+    margin: 0;
+}
+
+.white .navbar-brand img { height: 50px; width: auto; }
+
+}
+
+.del { padding-bottom: 40px; }
+
+#hjem { position: relative; }
+#hjem, #referanser { background:  radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(217,237,242,1) 41%, rgba(153,205,219,1) 100%); }
+body { background:  radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(217,237,242,1) 41%, rgba(153,205,219,1) 100%); }
+
+
+@media (max-width: @screen-xs-max) {
+   
+div.first {
+  padding-top: 130px;
+}
+	.navbar-header { height: 122px; transition: all 2s ease-in;}
+	.navbar-brand { position: absolute; }
+}
+// Transparent navbar
+//
+// Reset transparent navbar basics
+@navbar-transparent-color:                      transparent;
+@navbar-transparent-bg:                         transparent;
+@navbar-transparent-border:                     transparent;
+
+// Transparent navbar links
+@navbar-transparent-link-color:                 #000;
+@navbar-transparent-link-hover-color:           #eeee;
+@navbar-transparent-link-hover-bg:              transparent;
+@navbar-transparent-link-active-color:          orange;
+@navbar-transparent-link-active-bg:             transparent;
+@navbar-transparent-link-disabled-color:        #fff;
+@navbar-transparent-link-disabled-bg:           transparent;
+
+// Transparent navbar brand label
+@navbar-transparent-brand-color:                #fff;
+@navbar-transparent-brand-hover-color:          #fff;
+@navbar-transparent-brand-hover-bg:             transparent;
+
+// Transparent navbar search
+// Normal navbar needs no special styles or vars
+@navbar-transparent-search-bg:                  #fff;
+@navbar-transparent-search-bg-focus:            #fff;
+@navbar-transparent-search-border:              #fff;
+@navbar-transparent-search-placeholder-color:   #fff;
+
+// Transparent navbar toggle
+@navbar-transparent-toggle-hover-bg:            transparent;
+@navbar-transparent-toggle-icon-bar-bg:         #fff;
+@navbar-transparent-toggle-border-color:        #fff;
+
+
+// !custom
+
+.navbar-transparent{
+  .navbar-nav:hover a {
+    opacity:0.8;
+  }
+  .navbar-nav:hover a:hover {
+      opacity:1;
+  }
+}
+
+// transparent navbar
+
+.navbar-transparent {
+  background-color: @navbar-transparent-bg;
+  border-color: @navbar-transparent-border;
+  transition: all 2s ease-in;
+
+  .navbar-brand {
+    color: @navbar-transparent-brand-color;
+    &:hover,
+    &:focus {
+      color: @navbar-transparent-brand-hover-color;
+      background-color: @navbar-transparent-brand-hover-bg;
+    }
+  }
+
+  .navbar-text {
+    color: @navbar-transparent-color;
+  }
+
+  .navbar-nav {
+    > li > a {
+      color: @navbar-transparent-link-color;
+      transition: all 0.5s ease-in;
+
+
+      &:hover,
+      &:focus {
+        color: @navbar-transparent-link-hover-color;
+        background-color: @navbar-transparent-link-hover-bg;
+      }
+    }
+    > .active > a {
+      &,
+      &:hover,
+      &:focus {
+        color: @navbar-transparent-link-active-color;
+        background-color: @navbar-transparent-link-active-bg;
+      }
+    }
+    > .disabled > a {
+      &,
+      &:hover,
+      &:focus {
+        color: @navbar-transparent-link-disabled-color;
+        background-color: @navbar-transparent-link-disabled-bg;
+      }
+    }
+  }
+
+  // Darken the responsive nav toggle
+  .navbar-toggle {
+    border-color: @navbar-transparent-toggle-border-color;
+    &:hover,
+    &:focus {
+      background-color: @navbar-transparent-toggle-hover-bg;
+    }
+    .icon-bar {
+      background-color: @navbar-transparent-toggle-icon-bar-bg;
+    }
+  }
+
+  .navbar-collapse,
+  .navbar-form {
+    border-color: darken(@navbar-transparent-bg, 7%);
+  }
+
+  // Dropdowns
+  .navbar-nav {
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        background-color: @navbar-transparent-link-active-bg;
+        color: @navbar-transparent-link-active-color;
+      }
+    }
+    > .dropdown > a:hover .caret {
+      border-top-color: @navbar-transparent-link-hover-color;
+      border-bottom-color: @navbar-transparent-link-hover-color;
+    }
+    > .dropdown > a .caret {
+      border-top-color: @navbar-transparent-link-color;
+      border-bottom-color: @navbar-transparent-link-color;
+    }
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        .caret {
+          border-top-color: @navbar-transparent-link-active-color;
+          border-bottom-color: @navbar-transparent-link-active-color;
+        }
+      }
+    }
+
+    @media (max-width: @screen-xs-max) {
+      // Dropdowns get custom display
+      .open .dropdown-menu {
+        > .dropdown-header {
+          border-color: @navbar-transparent-border;
+        }
+        > li > a {
+          color: @navbar-transparent-link-color;
+          &:hover,
+          &:focus {
+            color: @navbar-transparent-link-hover-color;
+            background-color: @navbar-transparent-link-hover-bg;
+          }
+        }
+        > .active > a {
+          &,
+          &:hover,
+          &:focus {
+            color: @navbar-transparent-link-active-color;
+            background-color: @navbar-transparent-link-active-bg;
+          }
+        }
+        > .disabled > a {
+          &,
+          &:hover,
+          &:focus {
+            color: @navbar-transparent-link-disabled-color;
+            background-color: @navbar-transparent-link-disabled-bg;
+          }
+        }
+      }
+    }
+  }
+
+  .navbar-link {
+    color: @navbar-transparent-link-color;
+    &:hover {
+      color: @navbar-transparent-link-hover-color;
+    }
+  }
+}
+// White navbar
+//
+// Reset white navbar basics
+@navbar-white-color:                      #333;
+@navbar-white-bg:                         #fff;
+@navbar-white-border:                     transparent;
+
+// White navbar links
+@navbar-white-link-color:                 #333;
+@navbar-white-link-hover-color:           orange;
+@navbar-white-link-hover-bg:              transparent;
+@navbar-white-link-active-color:          #333;
+@navbar-white-link-active-bg:             transparent;
+@navbar-white-link-disabled-color:        #333;
+@navbar-white-link-disabled-bg:           transparent;
+
+// White navbar brand label
+@navbar-white-brand-color:                #333;
+@navbar-white-brand-hover-color:          #333;
+@navbar-white-brand-hover-bg:             transparent;
+
+// White navbar search
+// Normal navbar needs no special styles or vars
+@navbar-white-search-bg:                  #fff;
+@navbar-white-search-bg-focus:            #fff;
+@navbar-white-search-border:              #fff;
+@navbar-white-search-placeholder-color:   #ccc;
+
+// White navbar toggle
+@navbar-white-toggle-hover-bg:            transparent;
+@navbar-white-toggle-icon-bar-bg:         #ccc;
+@navbar-white-toggle-border-color:        #ccc;
+@media (max-width: @screen-xs-max) {
+
+
+// white navbar
+
+.navbar-transparent {
+  background-color: @navbar-white-bg;
+  border-color: @navbar-white-border;
+
+  .navbar-brand {
+    color: @navbar-white-brand-color;
+    &:hover,
+    &:focus {
+      color: @navbar-white-brand-hover-color;
+      background-color: @navbar-white-brand-hover-bg;
+    }
+  }
+
+  .navbar-text {
+    color: @navbar-white-color;
+  }
+
+  .navbar-nav {
+    > li > a {
+      color: @navbar-white-link-color;
+
+      &:hover,
+      &:focus {
+        color: @navbar-white-link-hover-color;
+        background-color: @navbar-white-link-hover-bg;
+      }
+    }
+    > .active > a {
+      &,
+      &:hover,
+      &:focus {
+        color: @navbar-white-link-active-color;
+        background-color: @navbar-white-link-active-bg;
+      }
+    }
+    > .disabled > a {
+      &,
+      &:hover,
+      &:focus {
+        color: @navbar-white-link-disabled-color;
+        background-color: @navbar-white-link-disabled-bg;
+      }
+    }
+  }
+
+  // Darken the responsive nav toggle
+  .navbar-toggle {
+    border-color: @navbar-white-toggle-border-color;
+    &:hover,
+    &:focus {
+      background-color: @navbar-white-toggle-hover-bg;
+    }
+    .icon-bar {
+      background-color: @navbar-white-toggle-icon-bar-bg;
+    }
+  }
+
+  .navbar-collapse,
+  .navbar-form {
+    border-color: darken(@navbar-white-bg, 7%);
+  }
+
+  // Dropdowns
+  .navbar-nav {
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        background-color: @navbar-white-link-active-bg;
+        color: @navbar-white-link-active-color;
+      }
+    }
+    > .dropdown > a:hover .caret {
+      border-top-color: @navbar-white-link-hover-color;
+      border-bottom-color: @navbar-white-link-hover-color;
+    }
+    > .dropdown > a .caret {
+      border-top-color: @navbar-white-link-color;
+      border-bottom-color: @navbar-white-link-color;
+    }
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        .caret {
+          border-top-color: @navbar-white-link-active-color;
+          border-bottom-color: @navbar-white-link-active-color;
+        }
+      }
+    }
+
+    @media (max-width: @screen-xs-max) {
+      // Dropdowns get custom display
+      .open .dropdown-menu {
+        > .dropdown-header {
+          border-color: @navbar-white-border;
+        }
+        > li > a {
+          color: @navbar-white-link-color;
+          &:hover,
+          &:focus {
+            color: @navbar-white-link-hover-color;
+            background-color: @navbar-white-link-hover-bg;
+          }
+        }
+        > .active > a {
+          &,
+          &:hover,
+          &:focus {
+            color: @navbar-white-link-active-color;
+            background-color: @navbar-white-link-active-bg;
+          }
+        }
+        > .disabled > a {
+          &,
+          &:hover,
+          &:focus {
+            color: @navbar-white-link-disabled-color;
+            background-color: @navbar-white-link-disabled-bg;
+          }
+        }
+      }
+    }
+  }
+
+  .navbar-link {
+    color: @navbar-white-link-color;
+    &:hover {
+      color: @navbar-white-link-hover-color;
+    }
+  }
+}
+}
+
+
+.navbar-transparent.white {
+  background-color: @navbar-white-bg;
+  border-color: @navbar-white-border;
+
+  .navbar-brand {
+    color: @navbar-white-brand-color;
+    &:hover,
+    &:focus {
+      color: @navbar-white-brand-hover-color;
+      background-color: @navbar-white-brand-hover-bg;
+    }
+  }
+
+  .navbar-text {
+    color: @navbar-white-color;
+  }
+
+  .navbar-nav {
+    > li > a {
+      color: @navbar-white-link-color;
+
+      &:hover,
+      &:focus {
+        color: @navbar-white-link-hover-color;
+        background-color: @navbar-white-link-hover-bg;
+      }
+    }
+    > .active > a {
+      &,
+      &:hover,
+      &:focus {
+        color: @navbar-white-link-active-color;
+        background-color: @navbar-white-link-active-bg;
+      }
+    }
+    > .disabled > a {
+      &,
+      &:hover,
+      &:focus {
+        color: @navbar-white-link-disabled-color;
+        background-color: @navbar-white-link-disabled-bg;
+      }
+    }
+  }
+
+  // Darken the responsive nav toggle
+  .navbar-toggle {
+    border-color: @navbar-white-toggle-border-color;
+    &:hover,
+    &:focus {
+      background-color: @navbar-white-toggle-hover-bg;
+    }
+    .icon-bar {
+      background-color: @navbar-white-toggle-icon-bar-bg;
+    }
+  }
+
+  .navbar-collapse,
+  .navbar-form {
+    border-color: darken(@navbar-white-bg, 7%);
+  }
+
+  // Dropdowns
+  .navbar-nav {
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        background-color: @navbar-white-link-active-bg;
+        color: @navbar-white-link-active-color;
+      }
+    }
+    > .dropdown > a:hover .caret {
+      border-top-color: @navbar-white-link-hover-color;
+      border-bottom-color: @navbar-white-link-hover-color;
+    }
+    > .dropdown > a .caret {
+      border-top-color: @navbar-white-link-color;
+      border-bottom-color: @navbar-white-link-color;
+    }
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        .caret {
+          border-top-color: @navbar-white-link-active-color;
+          border-bottom-color: @navbar-white-link-active-color;
+        }
+      }
+    }
+
+    @media (max-width: @screen-xs-max) {
+      // Dropdowns get custom display
+      .open .dropdown-menu {
+        > .dropdown-header {
+          border-color: @navbar-white-border;
+        }
+        > li > a {
+          color: @navbar-white-link-color;
+          &:hover,
+          &:focus {
+            color: @navbar-white-link-hover-color;
+            background-color: @navbar-white-link-hover-bg;
+          }
+        }
+        > .active > a {
+          &,
+          &:hover,
+          &:focus {
+            color: @navbar-white-link-active-color;
+            background-color: @navbar-white-link-active-bg;
+          }
+        }
+        > .disabled > a {
+          &,
+          &:hover,
+          &:focus {
+            color: @navbar-white-link-disabled-color;
+            background-color: @navbar-white-link-disabled-bg;
+          }
+        }
+      }
+    }
+  }
+
+  .navbar-link {
+    color: @navbar-white-link-color;
+    &:hover {
+      color: @navbar-white-link-hover-color;
+    }
+  }
+}

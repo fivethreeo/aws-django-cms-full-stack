@@ -1,0 +1,35 @@
+{% load cms_tags staticfiles sekizai_tags menu_tags %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}This is my new project home page{% endblock title %}</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        {% render_block "css" %}
+    </head>
+    <body>
+        {% cms_toolbar %}<!--
+        <div class="navbar navbar-transparent" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Project name</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        {% show_menu 0 1 100 100 "menu.html" %}
+                    </ul>
+                </div>
+            </div>
+        </div>-->
+        {% block content %}{% endblock content %}
+        {% render_block "js" %}
+        <script src="{% static 'js/main.js' %}"></script>
+    </body>
+</html>
