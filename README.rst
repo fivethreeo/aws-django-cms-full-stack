@@ -1,6 +1,6 @@
 A full django stack with django cms
 
-* elastick beanstalk using instanceprofile for credential rotation
+* elastic beanstalk using instanceprofile for credential rotation
 * almost fits into free tier with single instance (redis is one cache node too many)
 * aws managed elasticsearch
 * aws managed redis
@@ -22,6 +22,10 @@ Install `nodejs`_ or `io.js`_ and `Python`_.
   gulp configure
   gulp deploy_lambda_resource
   gulp deploy_full_stack
+
+Full deploy takes about 30 min, lambda resource for elasticsearch is slow.
+
+Go to elastic beanstalk console and visit the url /admin/ to add the first page.
 
 To build css/javascript
 =======================
