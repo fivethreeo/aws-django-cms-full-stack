@@ -70,6 +70,16 @@
       "Type": "String",
       "Default" : "aws-django-"
     },
+    "VersionLabel": {
+      "Description": "VersionLabel of application zip",
+      "Type": "String",
+      "Default": "Initial Version"
+    },
+    "VersionDescription": {
+      "Description": "VersionDescription of application zip",
+      "Type": "String",
+      "Default": "Initial Version"
+    },
     "AppZIPFile": {
       "Description": "The location of the application ZIP file in the AssetsBucket",
       "Type": "String",
@@ -262,6 +272,8 @@
         "Parameters" : {
           "DeveloperName"     : { "Ref" : "DeveloperName"},
           "ApplicationName"  : { "Ref" : "ApplicationName" },
+          "VersionLabel"  : { "Ref" : "VersionLabel" },
+          "VersionDescription"  : { "Ref" : "VersionDescription" },
           "EnvironmentName"     : { "Ref" : "EnvironmentName"},
           "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
           "MemCacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCacheEndpoint" ]},

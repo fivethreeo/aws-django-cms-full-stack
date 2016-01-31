@@ -8,6 +8,8 @@ var main = function (opts, main_callback) {
 	var stream = require('stream');
 	var async = require('async');
 	var archiver = require('archiver');
+    var prompt = require('prompt');
+    var _ = require('lodash');
 
 	var region = opts.region ? opts.region : 'us-east-1';
 	if (!opts.keyname) throw 'AWS keypair name not supplied';
@@ -40,7 +42,26 @@ var main = function (opts, main_callback) {
 
 	var s3 = new AWS.S3();
 
+	var version_params;
+
 	async.waterfall([
+	    function(callback) {
+		  prompt.start();
+		  prompt.get([{
+		    name: 'VersionLabel',
+		    description: 'VersionLabel of application zip',
+		    type: 'string',
+		    default: 'Initial version'
+		  },{
+		    name: 'VersionDescription',
+		    description: 'VersionDescription of application zip',
+		    type: 'string',
+		    default: 'Initial version'
+		  }], function(err, result) {
+		  	  version_params = result;
+		      return callback();
+		  });
+	    },
 	    function(callback) {
 	        var params = {
 	        	Bucket: assetsbucket,
@@ -124,6 +145,23 @@ var main = function (opts, main_callback) {
 	    	var cloudformation = new AWS.CloudFormation();
 			        
 			var params = {
+			  StackName: stackname // required
+			};
+
+	        cloudformation.describeStacks(params, function(err, data) {
+	            if (err) callback(null, false, zonedata);    // an error occurred
+	            else {
+	               if (!/(CREATE|UPDATE)_COMPLETE/.test(data.Stacks[0].StackStatus)) throw 'Wait for stack status COMPLETE';
+	               callback(null, true, zonedata);
+	            }      // successful response
+	        });
+
+	    },
+	    function(update, zonedata, callback) {
+
+	    	var cloudformation = new AWS.CloudFormation();
+			        
+			var params = {
 			  StackName: stackname, // required
 			  Capabilities: [
 			    'CAPABILITY_IAM'
@@ -157,15 +195,31 @@ var main = function (opts, main_callback) {
 				  {
 				    "ParameterKey": "ElasticsearchDomainName",
 				    "ParameterValue": applicationname
+				  },
+				  {
+				    "ParameterKey": "VersionLabel",
+				    "ParameterValue": version_params.VersionLabel
+				  },
+				  {
+				    "ParameterKey": "VersionDescription",
+				    "ParameterValue": version_params.VersionDescription
 				  }
 			  ],
 			  TemplateURL: ["http://", assetsbucket, ".s3.amazonaws.com/", "public/vpc/django-master.cfn.json"].join('')
 			};
 
-	        cloudformation.createStack(params, function(err, data) {
-	            if (err) throw err; // an error occurred
-	            else callback();      // successful response
-	        });
+			if (update) {
+		        cloudformation.updateStack(params, function(err, data) {
+		            if (err) throw err; // an error occurred
+		            else callback();      // successful response
+		        });
+			}
+			else {
+		        cloudformation.createStack(params, function(err, data) {
+		            if (err) throw err; // an error occurred
+		            else callback();      // successful response
+		        });
+		    }
 
 	    }],
 	    function() {

@@ -94,6 +94,16 @@
     "ApplicationName": {
       "Type": "String"
     },
+    "VersionLabel": {
+      "Description": "VersionLabel of application zip",
+      "Type": "String",
+      "Default": "Initial Version"
+    },
+    "VersionDescription": {
+      "Description": "VersionDescription of application zip",
+      "Type": "String",
+      "Default": "Initial Version"
+    },
     "DatabaseName": {
       "Type": "String"
     },
@@ -184,8 +194,8 @@
           }]
         }],
         "ApplicationVersions": [{
-          "VersionLabel": "Initial Version",
-          "Description": "Initial Version",
+          "VersionLabel": { "Ref": "VersionLabel" },
+          "Description": { "Ref": "VersionDescription" },
           "SourceBundle": {
             "S3Bucket": {
               "Fn::Join": ["", [{
@@ -207,7 +217,7 @@
         "ApplicationName": { "Ref": "Application"},
         "EnvironmentName" : { "Ref": "EnvironmentName" },
         "Description": "Default Environment",
-        "VersionLabel": "Initial Version",
+        "VersionLabel": { "Ref": "VersionLabel" },
         "TemplateName": "DefaultConfiguration",
         "OptionSettings": [{
           "Namespace": "aws:ec2:vpc",
