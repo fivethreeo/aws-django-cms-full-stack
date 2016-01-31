@@ -5,7 +5,7 @@
     "archiver": "^0.21.0",
     "async": "^1.5.2",
     "aws-sdk": "^2.2.32",
-    "cfn-elasticsearch-domain": "git+https://github.com/fivethreeo/cfn-elasticsearch-domain.git",
+    "cfn-elasticsearch-domain": "git+https://github.com/fivethreeo/cfn-elasticsearch-domain.git#180_15",
     "connect": "^3.4.0",
     "cross-spawn-async": "^2.1.8",
     "gulp": "^3.9.0",

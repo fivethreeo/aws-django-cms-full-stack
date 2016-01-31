@@ -28,7 +28,7 @@ SECRET_KEY = '+zqs41e&00r0he-fucf+x(@4@4^&ig7_dmv182i4ui3ntxn2h6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'DJANGO_DEV' in os.environ
 
-ALLOWED_HOSTS = ['.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['nn.elasticbeanstalk.com']
 
 
 # Application definition
@@ -75,9 +75,6 @@ if 'AWS_STORAGE_BUCKET_NAME' in os.environ:
     AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
     AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
     AWS_S3_HOST = 's3-%s.amazonaws.com' % os.environ['AWS_REGION']
-
-    #AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-    #AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 
     STATICFILES_LOCATION = 'static'
     MEDIAFILES_LOCATION = 'media'

@@ -42,10 +42,14 @@ var main = function (opts, main_callback) {
 
 	var s3 = new AWS.S3();
 
-	var version_params;
+	var version_params = {
+		VersionLabel: 'Initial version'
+		VersionDescription: 'Initial version'
+	};
 
 	async.waterfall([
 	    function(callback) {
+	      /*
 		  prompt.start();
 		  prompt.get([{
 		    name: 'VersionLabel',
@@ -61,6 +65,8 @@ var main = function (opts, main_callback) {
 		  	  version_params = result;
 		      return callback();
 		  });
+	   */
+	    return callback();
 	    },
 	    function(callback) {
 	        var params = {
@@ -166,7 +172,6 @@ var main = function (opts, main_callback) {
 			  Capabilities: [
 			    'CAPABILITY_IAM'
 			  ],
-			  OnFailure: 'ROLLBACK',
 			  Parameters: [
 				  {
 				    "ParameterKey": "ApplicationName",
@@ -215,7 +220,7 @@ var main = function (opts, main_callback) {
 		        });
 			}
 			else {
-		        cloudformation.createStack(params, function(err, data) {
+		        cloudformation.createStack(_.assign(params, {OnFailure: 'ROLLBACK'}), function(err, data) {
 		            if (err) throw err; // an error occurred
 		            else callback();      // successful response
 		        });
