@@ -59,7 +59,6 @@ if 'ELASTICSEARCH_ENDPOINT' in os.environ:
             'INDEX_NAME': 'haystack'
         }
     }
-
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
     HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
 else:
@@ -88,6 +87,12 @@ if 'MEMCACHE_ENDPOINT' in os.environ:
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
             'LOCATION': '%s:%s' % (os.environ['MEMCACHE_ENDPOINT'], os.environ['MEMCACHE_PORT'])
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
         }
     }
 
@@ -234,5 +239,3 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters'
 )
 
-import djcelery
-djcelery.setup_loader()
