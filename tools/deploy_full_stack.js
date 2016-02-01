@@ -54,11 +54,7 @@ var main = function (opts, main_callback) {
 
 	var s3 = new AWS.S3();
 
-	var version_params = {
-		VersionLabel: 'Initial version',
-		VersionDescription: 'New version'
-	};
-
+    var versiondescription = 'Latest version';
 	var version;
 
 	async.waterfall([
@@ -84,8 +80,8 @@ var main = function (opts, main_callback) {
 	        };
 
 	        s3.createBucket(params, function(err, data) {
-	        	if (err) callback(null);  // an error occurred
-	        	else callback(null); // successful response
+	        	if (err) callback(null); 
+	        	else callback(null);
 	        });
 	    },
 	    function(callback) {
@@ -99,7 +95,7 @@ var main = function (opts, main_callback) {
 			        };
 
 			        s3.putObject(params, function(err, data) {
-			        	if (err) throw err;  // an error occurred
+			        	if (err) throw err; 
 			        	else eachcallback(); // successful response
 			        });
 			    },
@@ -127,8 +123,8 @@ var main = function (opts, main_callback) {
 		        };
 
 		        s3.putObject(params, function(err, data) {
-		        	if (err) throw err;  // an error occurred
-		        	else callback(null); // successful response
+		        	if (err) throw err; 
+		        	else callback(null);
 		        });
 		    })
 
@@ -148,8 +144,8 @@ var main = function (opts, main_callback) {
 	        };
 
 	        ec2.describeAvailabilityZones(params, function(err, data) {
-	        	if (err) throw err;  // an error occurred
-	        	else callback(null, data); // successful response
+	        	if (err) throw err; 
+	        	else callback(null, data);
 	        });
 	    },
 	    function(zonedata, callback) {
@@ -161,11 +157,11 @@ var main = function (opts, main_callback) {
 			};
 
 	        cloudformation.describeStacks(params, function(err, data) {
-	            if (err) callback(null, false, zonedata);    // an error occurred
+	            if (err) callback(null, false, zonedata);   
 	            else {
 	               if (!/(CREATE|UPDATE)_(ROLLBACK_)?COMPLETE/.test(data.Stacks[0].StackStatus)) throw 'Wait for stack status COMPLETE';
 	               callback(null, true, zonedata);
-	            }      // successful response
+	            }
 	        });
 
 	    },
@@ -186,8 +182,7 @@ var main = function (opts, main_callback) {
 				VPCAvailabilityZone1: zonedata.AvailabilityZones[0].ZoneName,
 				VPCAvailabilityZone2: zonedata.AvailabilityZones[1].ZoneName,
 				ElasticsearchDomainName: applicationname,
-				VersionLabel: version_params.VersionLabel,
-				VersionDescription: version_params.VersionDescription,
+				VersionDescription: versiondescription,
 				AppZIPFile:'public/django-' + version + '.zip'
 			  }),
 			  TemplateURL: ["http://", assetsbucket, ".s3.amazonaws.com/", "public/vpc/django-master.cfn.json"].join('')
@@ -195,20 +190,20 @@ var main = function (opts, main_callback) {
 
 			if (update) {
 		        cloudformation.updateStack(params, function(err, data) {
-		            if (err) throw err; // an error occurred
-		            else callback();      // successful response
+		            if (err) throw err;
+		            else callback();
 		        });
 			}
 			else {
 		        cloudformation.createStack(_.assign(params, {OnFailure: 'ROLLBACK'}), function(err, data) {
-		            if (err) throw err; // an error occurred
-		            else callback();      // successful response
+		            if (err) throw err;
+		            else callback();
 		        });
 		    }
 
 	    }],
 	    function() {
-	    	console.log('Full stack deployed!');
+	    	console.log('Full stack deploy initiated!');
 	    	return main_callback();
 	    }
 	);

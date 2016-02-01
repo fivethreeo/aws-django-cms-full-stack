@@ -22,3 +22,7 @@ django-smuggler
 django-widget-tweaks
 django-storages
 boto
+boto3
+kombu
+celery[redis]
+django-celery

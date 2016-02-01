@@ -70,11 +70,6 @@
       "Type": "String",
       "Default" : "aws-django-"
     },
-    "VersionLabel": {
-      "Description": "VersionLabel of application zip",
-      "Type": "String",
-      "Default": "Initial Version"
-    },
     "VersionDescription": {
       "Description": "VersionDescription of application zip",
       "Type": "String",
@@ -272,7 +267,6 @@
         "Parameters" : {
           "DeveloperName"     : { "Ref" : "DeveloperName"},
           "ApplicationName"  : { "Ref" : "ApplicationName" },
-          "VersionLabel"  : { "Ref" : "VersionLabel" },
           "VersionDescription"  : { "Ref" : "VersionDescription" },
           "EnvironmentName"     : { "Ref" : "EnvironmentName"},
           "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},

@@ -94,11 +94,6 @@
     "ApplicationName": {
       "Type": "String"
     },
-    "VersionLabel": {
-      "Description": "VersionLabel of application zip",
-      "Type": "String",
-      "Default": "Initial Version"
-    },
     "VersionDescription": {
       "Description": "VersionDescription of application zip",
       "Type": "String",
@@ -192,20 +187,6 @@
             "OptionName": "InstanceType",
             "Value": { "Ref": "InstanceType" }
           }]
-        }],
-        "ApplicationVersions": [{
-          "VersionLabel": "Initial version",
-          "Description": "Initial version",
-          "SourceBundle": {
-            "S3Bucket": {
-              "Fn::Join": ["", [{
-                "Ref": "AssetsBucketPrefix"
-              }, {
-                "Ref": "AWS::Region"
-              }]]
-            },
-            "S3Key": "public/django.zip"
-          }
         }]
       }
     },

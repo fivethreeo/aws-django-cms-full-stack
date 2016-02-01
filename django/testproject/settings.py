@@ -28,7 +28,7 @@ SECRET_KEY = '+zqs41e&00r0he-fucf+x(@4@4^&ig7_dmv182i4ui3ntxn2h6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'DJANGO_DEV' in os.environ
 
-ALLOWED_HOSTS = ['nn.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['*.elasticbeanstalk.com']
 
 
 # Application definition
@@ -69,6 +69,66 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'testproject', 'static'),
 )
 SITE_ID = 1
+
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_DB_USERNAME'],
+            'PASSWORD': os.environ['RDS_DB_PASSWORD'],
+            'HOST': os.environ['RDS_DB_HOST'],
+            'PORT': os.environ['RDS_DB_PORT']
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(DATA_DIR, 'django.db'),
+        }
+    }
+
+if 'ELASTICSEARCH_ENDPOINT' in os.environ:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+            'URL': 'http://%s:9200/' % os.environ['ELASTICSEARCH_ENDPOINT'],
+            'INDEX_NAME': 'haystack'
+        }
+    }
+
+    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+    HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.simple_backend.SimpleEngine'
+        }
+    }
+
+if 'REDIS_ID' in os.environ:
+    import boto3
+    boto3.setup_default_session(region_name=os.environ['AWS_REGION'])
+    client = boto3.client('elasticache')
+    response = client.describe_cache_clusters(
+        CacheClusterId=os.environ['REDIS_ID'],
+        ShowCacheNodeInfo=True
+    )
+    redis_info = response['CacheClusters'][0]['CacheNodes'][0]['Endpoint']
+    
+    BROKER_URL = 'redis://%s:%i/0' % (redis_info['Address'], redis_info['Port'])
+else:
+    BROKER_URL = 'dummy://'
+
+if 'MEMCACHE_ENDPOINT' in os.environ:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '%s:%s' % (os.environ['MEMCACHE_ENDPOINT'], os.environ['MEMCACHE_PORT'])
+        }
+    }
 
 if 'AWS_STORAGE_BUCKET_NAME' in os.environ:
 
@@ -164,16 +224,16 @@ INSTALLED_APPS = (
     'storages',
     'widget_tweaks',
     'post_office',
+    'djcelery',
+    'haystack',
     'smuggler'
 )
 
 LANGUAGES = (
-    ## Customize this
     ('en', gettext('English')),
 )
 
 CMS_LANGUAGES = {
-    ## Customize this
     'default': {
         'public': True,
         'hide_untranslated': False,
@@ -191,34 +251,14 @@ CMS_LANGUAGES = {
 }
 
 CMS_TEMPLATES = (
-    ## Customize this
     ('page.html', 'Page'),
-    ('feature.html', 'Page with Feature'),
-    ('test.html', 'Test app page')
+    ('feature.html', 'Page with Feature')
 )
 
 CMS_PERMISSION = True
 
 CMS_PLACEHOLDER_CONF = {}
 
-if 'DJANGO_DEV' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(DATA_DIR, 'django.db'),
-        }
-    }
-elif 'RDS_DB_NAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_DB_USERNAME'],
-            'PASSWORD': os.environ['RDS_DB_PASSWORD'],
-            'HOST': os.environ['RDS_DB_HOST'],
-            'PORT': os.environ['RDS_DB_PORT'],
-        }
-    }
 
 MIGRATION_MODULES = {
     'cmsplugin_filer_image': 'cmsplugin_filer_image.migrations_django',
@@ -235,3 +275,5 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters'
 )
 
+import djcelery
+djcelery.setup_loader()
