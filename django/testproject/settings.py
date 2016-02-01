@@ -8,7 +8,7 @@ SECRET_KEY = '+zqs41e&00r0he-fucf+x(@4@4^&ig7_dmv182i4ui3ntxn2h6'
 
 DEBUG = 'DJANGO_DEV' in os.environ
 
-ALLOWED_HOSTS = ['*.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['.elasticbeanstalk.com']
 
 ROOT_URLCONF = 'testproject.urls'
 
@@ -61,7 +61,6 @@ if 'ELASTICSEARCH_ENDPOINT' in os.environ:
     }
 
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
-
     HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
 else:
     HAYSTACK_CONNECTIONS = {
