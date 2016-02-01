@@ -194,8 +194,8 @@
           }]
         }],
         "ApplicationVersions": [{
-          "VersionLabel": { "Ref": "VersionLabel" },
-          "Description": { "Ref": "VersionDescription" },
+          "VersionLabel": "Initial version",
+          "Description": "Initial version",
           "SourceBundle": {
             "S3Bucket": {
               "Fn::Join": ["", [{
@@ -204,11 +204,28 @@
                 "Ref": "AWS::Region"
               }]]
             },
-            "S3Key": {
-              "Ref": "AppZIPFile"
-            }
+            "S3Key": "public/django.zip"
           }
         }]
+      }
+    },
+    "ApplicationVersion": {
+      "Type" : "AWS::ElasticBeanstalk::ApplicationVersion",
+      "Properties" : {
+        "ApplicationName": { "Ref": "Application"},
+        "Description": { "Ref": "VersionDescription" },
+        "SourceBundle": {
+          "S3Bucket": {
+            "Fn::Join": ["", [{
+              "Ref": "AssetsBucketPrefix"
+            }, {
+              "Ref": "AWS::Region"
+            }]]
+          },
+          "S3Key": {
+            "Ref": "AppZIPFile"
+          }
+        }
       }
     },
     "Environment": {
@@ -217,7 +234,7 @@
         "ApplicationName": { "Ref": "Application"},
         "EnvironmentName" : { "Ref": "EnvironmentName" },
         "Description": "Default Environment",
-        "VersionLabel": { "Ref": "VersionLabel" },
+        "VersionLabel": { "Ref": "ApplicationVersion" },
         "TemplateName": "DefaultConfiguration",
         "OptionSettings": [{
           "Namespace": "aws:ec2:vpc",

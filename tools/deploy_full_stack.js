@@ -1,5 +1,6 @@
 
 
+
 var main = function (opts, main_callback) {
 
 	var format = require('string-format');
@@ -9,7 +10,18 @@ var main = function (opts, main_callback) {
 	var async = require('async');
 	var archiver = require('archiver');
     var prompt = require('prompt');
-    var _ = require('lodash');
+	var _ = require('lodash');
+
+	function cfn_params(obj) {
+		var params = [];
+		_.forIn(obj, function(value, key) {
+		  params.push({
+		    "ParameterKey": key,
+		    "ParameterValue": value
+		  });
+		});
+		return params;
+	}
 
 	var region = opts.region ? opts.region : 'us-east-1';
 	if (!opts.keyname) throw 'AWS keypair name not supplied';
@@ -43,30 +55,24 @@ var main = function (opts, main_callback) {
 	var s3 = new AWS.S3();
 
 	var version_params = {
-		VersionLabel: 'Initial version'
-		VersionDescription: 'Initial version'
+		VersionLabel: 'Initial version',
+		VersionDescription: 'New version'
 	};
+
+	var version;
 
 	async.waterfall([
 	    function(callback) {
-	      /*
 		  prompt.start();
 		  prompt.get([{
-		    name: 'VersionLabel',
-		    description: 'VersionLabel of application zip',
+		    name: 'version',
+		    description: 'Version of application zip',
 		    type: 'string',
-		    default: 'Initial version'
-		  },{
-		    name: 'VersionDescription',
-		    description: 'VersionDescription of application zip',
-		    type: 'string',
-		    default: 'Initial version'
+		    default: 'initial'
 		  }], function(err, result) {
-		  	  version_params = result;
+		  	  version = result.version;
 		      return callback();
 		  });
-	   */
-	    return callback();
 	    },
 	    function(callback) {
 	        var params = {
@@ -115,7 +121,7 @@ var main = function (opts, main_callback) {
 		    converter.on('finish', function () {
 		        var params = {
 		        	Bucket: assetsbucket, /* required */
-		        	Key: 'public/django.zip', /* required */
+		        	Key: 'public/django-' + version + '.zip', /* required */
 		        	ACL: 'private',
 		        	Body: Buffer.concat(zip_parts),
 		        };
@@ -157,7 +163,7 @@ var main = function (opts, main_callback) {
 	        cloudformation.describeStacks(params, function(err, data) {
 	            if (err) callback(null, false, zonedata);    // an error occurred
 	            else {
-	               if (!/(CREATE|UPDATE)_COMPLETE/.test(data.Stacks[0].StackStatus)) throw 'Wait for stack status COMPLETE';
+	               if (!/(CREATE|UPDATE)_(ROLLBACK_)?COMPLETE/.test(data.Stacks[0].StackStatus)) throw 'Wait for stack status COMPLETE';
 	               callback(null, true, zonedata);
 	            }      // successful response
 	        });
@@ -172,44 +178,18 @@ var main = function (opts, main_callback) {
 			  Capabilities: [
 			    'CAPABILITY_IAM'
 			  ],
-			  Parameters: [
-				  {
-				    "ParameterKey": "ApplicationName",
-				    "ParameterValue": applicationname
-				  },
-				  {
-				    "ParameterKey": "EnvironmentName",
-				    "ParameterValue": environmentname
-				  },
-				  {
-				    "ParameterKey": "AssetsBucketPrefix",
-				    "ParameterValue": assetsbucketprefix
-				  },
-				  {
-				    "ParameterKey": "KeyName",
-				    "ParameterValue": keyname
-				  },
-				  {
-				    "ParameterKey": "VPCAvailabilityZone1",
-				    "ParameterValue": zonedata.AvailabilityZones[0].ZoneName
-				  },
-				  {
-				    "ParameterKey": "VPCAvailabilityZone2",
-				    "ParameterValue": zonedata.AvailabilityZones[1].ZoneName
-				  },
-				  {
-				    "ParameterKey": "ElasticsearchDomainName",
-				    "ParameterValue": applicationname
-				  },
-				  {
-				    "ParameterKey": "VersionLabel",
-				    "ParameterValue": version_params.VersionLabel
-				  },
-				  {
-				    "ParameterKey": "VersionDescription",
-				    "ParameterValue": version_params.VersionDescription
-				  }
-			  ],
+			  Parameters: cfn_params({
+			  	ApplicationName: applicationname,
+				EnvironmentName: environmentname,
+				AssetsBucketPrefix: assetsbucketprefix,
+				KeyName: keyname,
+				VPCAvailabilityZone1: zonedata.AvailabilityZones[0].ZoneName,
+				VPCAvailabilityZone2: zonedata.AvailabilityZones[1].ZoneName,
+				ElasticsearchDomainName: applicationname,
+				VersionLabel: version_params.VersionLabel,
+				VersionDescription: version_params.VersionDescription,
+				AppZIPFile:'public/django-' + version + '.zip'
+			  }),
 			  TemplateURL: ["http://", assetsbucket, ".s3.amazonaws.com/", "public/vpc/django-master.cfn.json"].join('')
 			};
 
