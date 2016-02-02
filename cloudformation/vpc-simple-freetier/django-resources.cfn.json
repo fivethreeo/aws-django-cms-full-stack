@@ -214,7 +214,7 @@
         "CacheNodeType"        : { "Ref" : "CacheInstanceType" },
         "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
         "Engine"               : "memcached",
-        "NumCacheNodes"        : "2"
+        "NumCacheNodes"        : "1"
       }
     },
 

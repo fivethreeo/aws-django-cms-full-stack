@@ -209,6 +209,8 @@ if 'REDIS_ID' in os.environ:
 else:
     BROKER_URL = 'dummy://'
 
+CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend'
+
 if 'MEMCACHE_ENDPOINT' in os.environ:
     CACHES = {
         'default': {
