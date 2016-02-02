@@ -32,87 +32,6 @@ STATICFILES_DIRS = (
 )
 SITE_ID = 1
 
-if 'RDS_DB_NAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_DB_USERNAME'],
-            'PASSWORD': os.environ['RDS_DB_PASSWORD'],
-            'HOST': os.environ['RDS_DB_HOST'],
-            'PORT': os.environ['RDS_DB_PORT']
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(DATA_DIR, 'django.db'),
-        }
-    }
-
-if 'ELASTICSEARCH_ENDPOINT' in os.environ:
-    HAYSTACK_CONNECTIONS = {
-        'default': {
-            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-            'URL': 'http://%s:9200/' % os.environ['ELASTICSEARCH_ENDPOINT'],
-            'INDEX_NAME': 'haystack'
-        }
-    }
-    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
-    HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
-else:
-    HAYSTACK_CONNECTIONS = {
-        'default': {
-            'ENGINE': 'haystack.backends.simple_backend.SimpleEngine'
-        }
-    }
-
-if 'REDIS_ID' in os.environ:
-    import boto3
-    boto3.setup_default_session(region_name=os.environ['AWS_REGION'])
-    client = boto3.client('elasticache')
-    response = client.describe_cache_clusters(
-        CacheClusterId=os.environ['REDIS_ID'],
-        ShowCacheNodeInfo=True
-    )
-    redis_info = response['CacheClusters'][0]['CacheNodes'][0]['Endpoint']
-    
-    BROKER_URL = 'redis://%s:%i/0' % (redis_info['Address'], redis_info['Port'])
-else:
-    BROKER_URL = 'dummy://'
-
-if 'MEMCACHE_ENDPOINT' in os.environ:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': '%s:%s' % (os.environ['MEMCACHE_ENDPOINT'], os.environ['MEMCACHE_PORT'])
-        }
-    }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
-        }
-    }
-
-if 'AWS_STORAGE_BUCKET_NAME' in os.environ:
-
-    AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
-    AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-    AWS_S3_HOST = 's3-%s.amazonaws.com' % os.environ['AWS_REGION']
-
-    STATICFILES_LOCATION = 'static'
-    MEDIAFILES_LOCATION = 'media'
-
-    STATICFILES_STORAGE = 'testproject.custom_storages.StaticStorage'
-    DEFAULT_FILE_STORAGE = 'testproject.custom_storages.MediaStorage'
-
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
-    MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
-else:
-    STATIC_URL = '/static/'
-    MEDIA_URL = '/media/'
 
 TEMPLATES = [
     {
@@ -239,3 +158,85 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters'
 )
 
+
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_DB_USERNAME'],
+            'PASSWORD': os.environ['RDS_DB_PASSWORD'],
+            'HOST': os.environ['RDS_DB_HOST'],
+            'PORT': os.environ['RDS_DB_PORT']
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(DATA_DIR, 'django.db'),
+        }
+    }
+
+if 'ELASTICSEARCH_ENDPOINT' in os.environ:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+            'URL': 'http://%s:9200/' % os.environ['ELASTICSEARCH_ENDPOINT'],
+            'INDEX_NAME': 'haystack'
+        }
+    }
+    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+    HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.simple_backend.SimpleEngine'
+        }
+    }
+
+if 'REDIS_ID' in os.environ:
+    import boto3
+    boto3.setup_default_session(region_name=os.environ['AWS_REGION'])
+    client = boto3.client('elasticache')
+    response = client.describe_cache_clusters(
+        CacheClusterId=os.environ['REDIS_ID'],
+        ShowCacheNodeInfo=True
+    )
+    redis_info = response['CacheClusters'][0]['CacheNodes'][0]['Endpoint']
+    
+    BROKER_URL = 'redis://%s:%i/0' % (redis_info['Address'], redis_info['Port'])
+else:
+    BROKER_URL = 'dummy://'
+
+if 'MEMCACHE_ENDPOINT' in os.environ:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '%s:%s' % (os.environ['MEMCACHE_ENDPOINT'], os.environ['MEMCACHE_PORT'])
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        }
+    }
+
+if 'AWS_STORAGE_BUCKET_NAME' in os.environ:
+
+    AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+    AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+    AWS_S3_HOST = 's3-%s.amazonaws.com' % os.environ['AWS_REGION']
+
+    STATICFILES_LOCATION = 'static'
+    MEDIAFILES_LOCATION = 'media'
+
+    STATICFILES_STORAGE = 'testproject.custom_storages.StaticStorage'
+    DEFAULT_FILE_STORAGE = 'testproject.custom_storages.MediaStorage'
+
+    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+    MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+else:
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
