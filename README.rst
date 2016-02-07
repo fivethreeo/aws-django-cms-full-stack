@@ -2,8 +2,8 @@ A full django stack with django cms
 
 * elastic beanstalk using instanceprofile for credential rotation
 * almost fits into free tier with single instance (redis is one cache node too many)
-* aws managed elasticsearch
-* aws managed redis
+* aws managed elasticsearch for haystack
+* aws managed redis for celery
 * aws managed memcache
 * aws managed postgres db
 

@@ -205,7 +205,6 @@ PLACEHOLDERS_SEARCH_LIST = {
 }
 
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
-#ALDRYN_SEARCH_INDEX_BASE_CLASS = 'celery_haystack.indexes.CelerySearchIndex'
 
 if 'REDIS_ID' in os.environ:
     import boto3
