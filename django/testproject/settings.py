@@ -8,7 +8,7 @@ SECRET_KEY = '+zqs41e&00r0he-fucf+x(@4@4^&ig7_dmv182i4ui3ntxn2h6'
 
 DEBUG = 'DJANGO_DEV' in os.environ
 
-ALLOWED_HOSTS = ['.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['localhost', '.elasticbeanstalk.com']
 
 ROOT_URLCONF = 'testproject.urls'
 
@@ -110,6 +110,11 @@ INSTALLED_APPS = (
     'post_office',
     'djcelery',
     'haystack',
+    'celery_haystack',
+    'aldryn_common',
+    'aldryn_search',
+    'standard_form',
+    'spurl',
     'smuggler'
 )
 
@@ -121,7 +126,7 @@ CMS_LANGUAGES = {
     'default': {
         'public': True,
         'hide_untranslated': False,
-        'redirect_on_fallback': True,
+        'redirect_on_fallback': True
     },
     1: [
         {
@@ -129,9 +134,9 @@ CMS_LANGUAGES = {
             'code': 'en',
             'hide_untranslated': False,
             'name': gettext('English'),
-            'redirect_on_fallback': True,
-        },
-    ],
+            'redirect_on_fallback': True
+        }
+    ]
 }
 
 CMS_TEMPLATES = (
@@ -182,18 +187,21 @@ if 'ELASTICSEARCH_ENDPOINT' in os.environ:
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-            'URL': 'http://%s:9200/' % os.environ['ELASTICSEARCH_ENDPOINT'],
+            'URL': 'http://%s:80/' % os.environ['ELASTICSEARCH_ENDPOINT'],
             'INDEX_NAME': 'haystack'
         }
     }
-    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
-    HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
+    HAYSTACK_SIGNAL_PROCESSOR = 'celery_haystack.signals.CelerySignalProcessor'
 else:
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'haystack.backends.simple_backend.SimpleEngine'
         }
     }
+    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
+#ALDRYN_SEARCH_INDEX_BASE_CLASS = 'celery_haystack.indexes.CelerySearchIndex'
 
 if 'REDIS_ID' in os.environ:
     import boto3
@@ -242,3 +250,62 @@ if 'AWS_STORAGE_BUCKET_NAME' in os.environ:
 else:
     STATIC_URL = '/static/'
     MEDIA_URL = '/media/'
+
+if 'AWS_REGION' in os.environ:
+    EMAIL_BACKEND = 'django_ses.SESBackend'
+    AWS_SES_REGION_NAME = os.environ['AWS_REGION']
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'    
+
+if 'SERVER_EMAIL' in os.environ:
+    SERVER_EMAIL = os.environ['SERVER_EMAIL']
+
+if 'ADMIN_EMAIL' in os.environ:
+    ADMINS = (
+        ('Admin', os.environ['ADMIN_EMAIL']),
+    )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    # How to format the output
+    'formatters': {
+        'standard': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    # Log handlers (where to go)
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler'
+        },
+        'console':{
+            'level':'INFO',
+            'class':'logging.StreamHandler',
+            'formatter': 'standard'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    # Loggers (where does the log come from)
+    'loggers': {
+        'django': {
+            'handlers':['mail_admins'],
+            'propagate': True,
+            'level':'WARN'
+        },
+        'django.db.backends': {
+            'handlers': ['mail_admins'],
+            'level': 'WARN',
+            'propagate': False
+        },
+        '': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR'
+        }
+    }
+}

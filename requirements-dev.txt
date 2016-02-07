@@ -1,3 +1,4 @@
+Django==1.8.9
 django-cms<3.3
 django-treebeard>=2.0
 https://github.com/divio/djangocms-column/archive/master.zip?1450269951.83
@@ -7,7 +8,6 @@ https://github.com/divio/djangocms-inherit/archive/master.zip?1450269951.83
 https://github.com/divio/djangocms-link/archive/master.zip?1450269951.83
 https://github.com/divio/djangocms-style/archive/master.zip?1450269951.83
 djangocms-admin-style>=1.0.6
-Django==1.8.6
 pytz
 django-classy-tags>=0.3.4.1
 html5lib
@@ -26,3 +26,10 @@ boto3
 kombu
 celery[redis]
 django-celery
+python-memcached
+django-haystack
+celery-haystack
+django-spurl
+aldryn-common
+https://github.com/fivethreeo/aldryn-search/archive/master.zip
+django-standard-form

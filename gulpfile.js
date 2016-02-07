@@ -103,6 +103,11 @@ gulp.task('configure', function (callback) {
     description: 'EC2 keypair for instance',
     type: 'string',
     required: true
+  }, {
+    name: 'email',
+    description: 'Email adress for error mails/server (ses verified)',
+    type: 'string',
+    required: true
   }], function(err, result) {
     fs.writeFile('./config.json', JSON.stringify(result), function(err) {
       if (err) throw err;

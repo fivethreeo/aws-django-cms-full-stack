@@ -1,3 +1,4 @@
+Django==1.8.9
 django-cms<3.3
 django-treebeard>=2.0
 psycopg2
@@ -12,7 +13,6 @@ django-filer>=0.9.12
 cmsplugin-filer>=0.10.2
 djangocms-admin-style>=1.0.6
 djangocms-text-ckeditor>=2.8.0
-Django==1.8.6
 pytz
 django-classy-tags>=0.3.4.1
 html5lib
@@ -30,4 +30,11 @@ celery[redis]
 django-celery
 python-memcached
 django-haystack
+celery-haystack
 pyelasticsearch
+django-spurl
+aldryn-common
+https://github.com/fivethreeo/aldryn-search/archive/celery.zip
+django-standard-form
+django-ses
+Paste

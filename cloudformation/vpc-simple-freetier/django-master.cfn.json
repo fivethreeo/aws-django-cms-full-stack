@@ -213,6 +213,14 @@
         "i2.xlarge.elasticsearch",
         "i2.2xlarge.elasticsearch"
       ]
+    },
+    "ServerEmail" : {
+      "Description" : "Email address django sends email from",
+      "Type": "String"
+    },
+    "AdminEmail" : {
+      "Description" : "Email address django sends error emails to",
+      "Type": "String"
     }
   },
 
@@ -269,6 +277,8 @@
           "ApplicationName"  : { "Ref" : "ApplicationName" },
           "VersionDescription"  : { "Ref" : "VersionDescription" },
           "EnvironmentName"     : { "Ref" : "EnvironmentName"},
+          "ServerEmail"     : { "Ref" : "ServerEmail"},
+          "AdminEmail"     : { "Ref" : "AdminEmail"},
           "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
           "MemCacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCacheEndpoint" ]},
           "MemCachePort"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCachePort" ]},

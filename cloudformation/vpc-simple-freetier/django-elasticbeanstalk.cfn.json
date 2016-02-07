@@ -132,7 +132,16 @@
     "PublicSubnet2" : {
       "Description" : "A public VPC subnet ID. Must be in a different AZ than PublicSubnet1",
       "Type": "String"
+    },
+    "ServerEmail" : {
+      "Description" : "Email address django sends email from",
+      "Type": "String"
+    },
+    "AdminEmail" : {
+      "Description" : "Email address django sends error emails to",
+      "Type": "String"
     }
+
   },
 
   "Resources": {
@@ -288,6 +297,18 @@
           "OptionName": "REDIS_ID",
           "Value": {
             "Ref": "RedisCacheId"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "SERVER_EMAIL",
+          "Value": {
+            "Ref": "ServerEmail"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ADMIN_EMAIL",
+          "Value": {
+            "Ref": "AdminEmail"
           }
         }]
       }

@@ -183,7 +183,9 @@ var main = function (opts, main_callback) {
 				VPCAvailabilityZone2: zonedata.AvailabilityZones[1].ZoneName,
 				ElasticsearchDomainName: applicationname,
 				VersionDescription: versiondescription,
-				AppZIPFile:'public/django-' + version + '.zip'
+				AppZIPFile:'public/django-' + version + '.zip',
+				ServerEmail: opts.email,
+				AdminEmail: opts.email
 			  }),
 			  TemplateURL: ["http://", assetsbucket, ".s3.amazonaws.com/", "public/vpc/django-master.cfn.json"].join('')
 			};
