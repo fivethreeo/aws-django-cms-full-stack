@@ -7,8 +7,14 @@ env
 *.sqlite
 .publish
 build
-*.db
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+*.db
+config.json
+
+# Elastic Beanstalk Files
+
+.elasticbeanstalk/*
+
+!.elasticbeanstalk/*.cfg.yml
+
+!.elasticbeanstalk/*.global.yml
+
