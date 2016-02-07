@@ -34,7 +34,7 @@ celery-haystack
 pyelasticsearch
 django-spurl
 aldryn-common
-https://github.com/fivethreeo/aldryn-search/archive/celery.zip
+aldryn-search
 django-standard-form
 django-ses
 Paste
