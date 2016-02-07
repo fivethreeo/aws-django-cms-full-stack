@@ -191,14 +191,18 @@ if 'ELASTICSEARCH_ENDPOINT' in os.environ:
             'INDEX_NAME': 'haystack'
         }
     }
-    HAYSTACK_SIGNAL_PROCESSOR = 'celery_haystack.signals.CelerySignalProcessor'
+    HAYSTACK_SIGNAL_PROCESSOR = 'aldryn_search.signal_processor.RealtimeSignalProcessor' # celery later
 else:
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'haystack.backends.simple_backend.SimpleEngine'
         }
     }
-    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+    HAYSTACK_SIGNAL_PROCESSOR = 'aldryn_search.signal_processor.RealtimeSignalProcessor'
+ 
+PLACEHOLDERS_SEARCH_LIST = {
+    '*': {}
+}
 
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 40
 #ALDRYN_SEARCH_INDEX_BASE_CLASS = 'celery_haystack.indexes.CelerySearchIndex'
