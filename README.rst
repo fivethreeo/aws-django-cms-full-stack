@@ -25,7 +25,9 @@ Install `nodejs`_ or `io.js`_ and `Python`_.
 
 Full deploy takes about 30 min, lambda resource for elasticsearch is slow.
 
-Go to elastic beanstalk console and visit the url /admin/ to add the first page.
+Go to beanstalk console and visit the url /admin/ to add the first page.
+
+Add another page with the search apphook, publish it and restart the app servers in the beanstalk console.
 
 To build css/javascript
 =======================
