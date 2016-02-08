@@ -6,7 +6,7 @@
   "Parameters": {
 
     "DatabaseUser": {
-      "Default": "admin",
+      "Default": "dbadmin",
       "NoEcho": "true",
       "Type": "String",
       "Description": "Database admin account name",
@@ -28,7 +28,83 @@
     "DatabaseName": {
       "Description": "The name of the database",
       "Type": "String",
-      "Default": " amediamanager"
+      "Default": " django"
+    },
+    "DatabaseInstanceType" : {
+      "Description" : "RDS DB instance type",
+      "Default": "db.t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "db.t2.micro",
+        "db.t2.small",
+        "db.t2.medium",
+        "db.t2.large",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.r3.large",
+        "db.r3.xlarge",
+        "db.r3.2xlarge",
+        "db.r3.4xlarge",
+        "db.r3.8xlarge"
+      ]
+    },
+    "CacheInstanceType" : {
+      "Description" : "Memcached instance type",
+      "Default": "cache.t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "cache.t2.micro",
+        "cache.t2.small",
+        "cache.t2.medium",
+        "cache.m3.medium",
+        "cache.m3.large",
+        "cache.m3.xlarge",
+        "cache.m3.2xlarge",
+        "cache.r3.large",
+        "cache.r3.xlarge",
+        "cache.r3.2xlarge",
+        "cache.r3.4xlarge",
+        "cache.r3.8xlarge"
+      ]
+    },
+    "ElasticsearchDomainCustomResourceLambdaName": {
+      "Type": "String",
+      "Default": "cfn-elasticsearch-domain-0-1-1",
+      "Description": "The name of the ElasticseachDomain Lambda you deployed to test this stack."
+    },
+    "ElasticsearchDomainName": {
+      "Type": "String",
+      "Default": "mysearchdomain",
+      "Description": "The name of the Elasticsearch Domain you will launch",
+      "AllowedPattern": "[a-z][a-z0-9\\-]+"
+    },
+    "ElasticsearchDomainClusterNodeCount": {
+      "Type": "Number",
+      "Default": "1",
+      "Description": "Number of nodes to build into the Elasticsearch Domain Cluster."
+    },
+    "ElasticsearchDomainClusterNodeSize": {
+      "Type": "String",
+      "Description": "Size of nodes to build into the Elasticsearch Domain Cluster.",
+      "Default": "t2.micro.elasticsearch",
+      "AllowedValues": [
+        "m3.medium.elasticsearch",
+        "m3.large.elasticsearch",
+        "m3.xlarge.elasticsearch",
+        "m3.2xlarge.elasticsearch",
+        "t2.micro.elasticsearch",
+        "t2.small.elasticsearch",
+        "t2.medium.elasticsearch",
+        "r3.large.elasticsearch",
+        "r3.xlarge.elasticsearch",
+        "r3.2xlarge.elasticsearch",
+        "r3.4xlarge.elasticsearch",
+        "r3.8xlarge.elasticsearch",
+        "i2.xlarge.elasticsearch",
+        "i2.2xlarge.elasticsearch"
+      ]
     },
     "InstanceSecurityGroup" : {
       "Description" : "A VPC Security Group ID that has ingress access to a NAT instance in the VPC. EB instances will be launched into this group.",
@@ -45,27 +121,58 @@
     "PrivateSubnet2" : {
       "Description" : "A private VPC subnet ID. Must be in a different AZ than PrivateSubnet1",
       "Type": "String"
+    },
+    "PublicSubnet1" : {
+      "Description" : "A public VPC subnet ID.",
+      "Type": "String"
+    },
+    "PublicSubnet2" : {
+      "Description" : "A public VPC subnet ID. Must be in a different AZ than PublicSubnet1",
+      "Type": "String"
     }
   },
 
   "Resources": {
-    "AppBucket": {
-      "Type": "AWS::S3::Bucket"
+    "MediaBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "PublicRead",
+        "CorsConfiguration": {
+          "CorsRules": [
+            {
+              "AllowedHeaders": [
+                "*"
+              ],
+              "AllowedMethods": [
+                "GET"
+              ],
+              "AllowedOrigins": [
+                "*"
+              ],
+              "ExposedHeaders": [
+                "Date"
+              ],
+              "Id": "myCORSRuleId1",
+              "MaxAge": "3600"
+            }
+          ]
+        }
+      }
     },
-    
+
     "CacheSubnetGroup" : {
         "Type" : "AWS::ElastiCache::SubnetGroup",
         "Properties" : {
             "Description" : "Cache Subnet Group",
             "SubnetIds": [{
-              "Ref": "PrivateSubnet1"
+              "Ref": "PublicSubnet1"
             }, {
-              "Ref": "PrivateSubnet2"
+              "Ref": "PublicSubnet2"
             }]
         }
     },
 
-    "CacheParameters" : {
+    "MemCacheParameters" : {
           "Type" : "AWS::ElastiCache::ParameterGroup",
           "Properties" : {
             "CacheParameterGroupFamily" : "memcached1.4",
@@ -76,40 +183,112 @@
           }
         },
 
-        "CacheSecurityGroup" : {
-          "Type" : "AWS::EC2::SecurityGroup",
-          "Properties" : {
-            "GroupDescription" : "Allow access to the cache from the Web Server",
-            "VpcId" : { "Ref" : "VPCId" },
-            "SecurityGroupIngress": [{
-              "IpProtocol": "tcp",
-              "FromPort": "0",
-              "ToPort": "65535",
-              "SourceSecurityGroupId": {
-                "Ref": "InstanceSecurityGroup"
-              }
-            }],
-            "SecurityGroupEgress": [{
-              "IpProtocol": "tcp",
-              "FromPort": "0",
-              "ToPort": "65535",
-              "SourceSecurityGroupId": {
-                "Ref": "InstanceSecurityGroup"
-              }
-            }]
-          }      
-        },  
+    "CacheSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Allow access to the cache from the Web Server",
+        "VpcId" : { "Ref" : "VPCId" },
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "0",
+          "ToPort": "65535",
+          "SourceSecurityGroupId": {
+            "Ref": "InstanceSecurityGroup"
+          }
+        }],
+        "SecurityGroupEgress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "0",
+          "ToPort": "65535",
+          "SourceSecurityGroupId": {
+            "Ref": "InstanceSecurityGroup"
+          }
+        }]
+      }      
+    },  
 
-        "CacheCluster" : {
-          "Type": "AWS::ElastiCache::CacheCluster",
-          "Properties": {
-            "CacheSubnetGroupName" : { "Ref" : "CacheSubnetGroup" },
-            "CacheNodeType"        : "cache.t1.micro",
-            "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
-            "Engine"               : "memcached",
-            "NumCacheNodes"        : "2"
+    "MemCacheCluster" : {
+      "Type": "AWS::ElastiCache::CacheCluster",
+      "Properties": {
+        "CacheSubnetGroupName" : { "Ref" : "CacheSubnetGroup" },
+        "CacheNodeType"        : { "Ref" : "CacheInstanceType" },
+        "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
+        "Engine"               : "memcached",
+        "NumCacheNodes"        : "1"
+      }
+    },
+
+    "RedisCacheCluster" : {
+      "Type": "AWS::ElastiCache::CacheCluster",
+      "Properties": {
+        "CacheSubnetGroupName" : { "Ref" : "CacheSubnetGroup" },
+        "CacheNodeType"        : { "Ref" : "CacheInstanceType" },
+        "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
+        "Engine"               : "redis",
+        "NumCacheNodes"        : "1"
+      }
+    },
+    "MyElasticsearchDomain": {
+      "Type": "Custom::ElasticsearchDomain",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::Join": [
+            ":",
+            [
+              "arn",
+              "aws",
+              "lambda",
+              {
+                "Ref": "AWS::Region"
+              },
+              {
+                "Ref": "AWS::AccountId"
+              },
+              "function",
+              {
+                "Ref": "ElasticsearchDomainCustomResourceLambdaName"
+              }
+            ]
+          ]
+        },
+        "DomainName": {
+          "Ref": "ElasticsearchDomainName"
+        },
+        "AccessPolicies": {
+          "Fn::Join": [
+            "",
+            [
+              "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"es:*\"],\"Resource\":\"arn:aws:es:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":domain/",
+              {
+                "Ref": "ElasticsearchDomainName"
+              },
+              "/*\"}]}"
+            ]
+          ]
+        },
+        "ElasticsearchClusterConfig": {
+          "InstanceCount": {
+            "Ref": "ElasticsearchDomainClusterNodeCount"
+          },
+          "InstanceType": {
+            "Ref": "ElasticsearchDomainClusterNodeSize"
           }
         },
+        "EBSOptions": {
+          "EBSEnabled": true,
+          "VolumeSize": 10,
+          "VolumeType": "standard"
+        }
+      }
+    },
 
     "DBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
@@ -120,16 +299,16 @@
         },
         "SecurityGroupIngress": [{
           "IpProtocol": "tcp",
-          "FromPort": "3306",
-          "ToPort": "3306",
+          "FromPort": "5432",
+          "ToPort": "5432",
           "SourceSecurityGroupId": {
             "Ref": "InstanceSecurityGroup"
           }
         }],
         "SecurityGroupEgress": [{
           "IpProtocol": "tcp",
-          "FromPort": "3306",
-          "ToPort": "3306",
+          "FromPort": "5432",
+          "ToPort": "5432",
           "CidrIp": "0.0.0.0/0"
         }]
       }
@@ -140,9 +319,9 @@
       "Properties": {
         "DBSubnetGroupDescription": "RDS DB Subnet group",
         "SubnetIds": [{
-          "Ref": "PrivateSubnet1"
+          "Ref": "PublicSubnet1"
         }, {
-          "Ref": "PrivateSubnet2"
+          "Ref": "PublicSubnet2"
         }]
       }
     },
@@ -150,14 +329,16 @@
     "Database": {
       "Type": "AWS::RDS::DBInstance",
       "Properties": {
-        "Engine": "MySQL",
+        "Engine": "postgres",
         "DBName": {
           "Ref": "DatabaseName"
         },
         "MasterUsername": {
           "Ref": "DatabaseUser"
         },
-        "DBInstanceClass": "db.m1.small",
+        "DBInstanceClass": {
+          "Ref": "DatabaseInstanceType"
+        },
         "AllocatedStorage": "5",
         "MasterUserPassword": {
           "Ref": "DatabasePassword"
@@ -178,32 +359,32 @@
     "RdsDbId": {
        "Value" : { "Ref" : "Database" }
     },
-    "CacheEndpoint": { 
-      "Value": { "Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Address" ]}
+    "MemCacheEndpoint": { 
+      "Value": { "Fn::GetAtt" : [ "MemCacheCluster", "ConfigurationEndpoint.Address" ]}
     },
-    "CachePort": { 
-      "Value" : {"Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Port" ]}
+    "MemCachePort": { 
+      "Value" : {"Fn::GetAtt" : [ "MemCacheCluster", "ConfigurationEndpoint.Port" ]}
     },
-    "AppBucket": {
-      "Value": { "Ref" : "AppBucket"}
+    "RedisCacheId": { 
+      "Value": { "Ref" : "RedisCacheCluster"}
     },
-    "TranscodeTopic": {
-      "Value": { "Ref" : "TranscodeTopic" }
+    "ElasticsearchDomainEndpoint": {
+      "Value": { "Fn::GetAtt": [ "MyElasticsearchDomain", "Endpoint" ] }
     },
-    "TranscodeQueue": {
-      "Value": { "Ref" : "TranscodeQueue" }
-    },
-    "TranscodeRoleArn": {
-      "Value": { "Fn::GetAtt": ["TranscodeRole", "Arn"]}
-    },
-    "UsersTable": {
-      "Value": { "Ref" : "UsersTable" }
+    "MediaBucket": {
+      "Value": { "Ref" : "MediaBucket"}
     },
     "DatabaseUser":{
       "Value": { "Ref" : "DatabaseUser"}
     },
     "DatabasePassword": {
       "Value": { "Ref" : "DatabasePassword" }
+    },
+    "DatabaseHost" : {
+        "Value" : { "Fn::GetAtt" : ["Database", "Endpoint.Address"] }
+    },
+    "DatabasePort" : {
+        "Value" : { "Fn::GetAtt" : ["Database", "Endpoint.Port"] }
     },
     "InstanceSecurityGroup": {
       "Value": { "Ref" : "InstanceSecurityGroup" }

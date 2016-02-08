@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Provisions two substacks: a VPC with bastion and NAT instances, and the django-resources stack, which launches the testprojec Beanstalk app and its dependencies into the VPC.",
+  "Description": "Provisions two substacks: a VPC and the django-resources stack, which launches the testproject Beanstalk app and its dependencies into the VPC.",
 
   "Parameters": {
     "VPCTemplateKey": {
@@ -20,12 +20,8 @@
       "Default": "public/vpc/django-elasticbeanstalk.cfn.json"
     },
     "KeyName": {
-      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the Elastic Beanstalk and Bastion hosts",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "255",
-      "AllowedPattern": "[\\x20-\\x7E]*",
-      "ConstraintDescription": "can contain only ASCII characters."
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the Elastic Beanstalk host",
+      "Type": "AWS::EC2::KeyPair::KeyName"
     },
     "SSHFrom": {
       "Description": "Lockdown SSH access to the bastion host (default can be accessed from anywhere)",
@@ -36,34 +32,16 @@
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
     },
-    "BastionInstanceType": {
-      "Description": "Bastion Host EC2 instance type",
-      "Type": "String",
-      "Default": "t1.micro",
-      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.xlarge", "m3.2xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge", "cc2.8xlarge", "cg1.4xlarge"],
-      "ConstraintDescription": "must be a valid EC2 instance type."
-    },
-    "NATInstanceType": {
-      "Description": "NAT Device EC2 instance type",
-      "Type": "String",
-      "Default": "m1.small",
-      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.xlarge", "m3.2xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge", "cc2.8xlarge", "cg1.4xlarge"],
-      "ConstraintDescription": "must be a valid EC2 instance type."
-    },
     "VPCAvailabilityZone1": {
       "Description": "One of two Availability Zones that will be used to create subnets.",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "255"
+      "Type": "AWS::EC2::AvailabilityZone::Name"
     },
     "VPCAvailabilityZone2": {
       "Description": "Two of two Availability Zones that will be used to create subnets. Must be different than VPCAvailabilityZone2.",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "255"
+      "Type": "AWS::EC2::AvailabilityZone::Name"
     },
     "DatabaseUser": {
-      "Default": "admin",
+      "Default": "dbadmin",
       "NoEcho": "true",
       "Type": "String",
       "Description": "Database admin account name",
@@ -92,6 +70,11 @@
       "Type": "String",
       "Default" : "aws-django-"
     },
+    "VersionDescription": {
+      "Description": "VersionDescription of application zip",
+      "Type": "String",
+      "Default": "Initial Version"
+    },
     "AppZIPFile": {
       "Description": "The location of the application ZIP file in the AssetsBucket",
       "Type": "String",
@@ -100,13 +83,144 @@
     "InstanceType": {
       "Description": "The type of instance to use for EB app servers",
       "Type": "String",
-      "Default": "t1.micro",
-      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large"]
+      "Default" : "t2.micro",
+      "AllowedValues" : [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m4.10xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "g2.2xlarge",
+        "g2.8xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge",
+        "d2.xlarge",
+        "d2.2xlarge",
+        "d2.4xlarge",
+        "d2.8xlarge"
+       ]
+    },
+    "DatabaseInstanceType" : {
+      "Description" : "RDS DB instance type",
+      "Default": "db.t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "db.t2.micro",
+        "db.t2.small",
+        "db.t2.medium",
+        "db.t2.large",
+        "db.m3.medium",
+        "db.m3.large",
+        "db.m3.xlarge",
+        "db.m3.2xlarge",
+        "db.r3.large",
+        "db.r3.xlarge",
+        "db.r3.2xlarge",
+        "db.r3.4xlarge",
+        "db.r3.8xlarge"
+      ]
+    },
+    "CacheInstanceType" : {
+      "Description" : "RDS DB instance type",
+      "Default": "cache.t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "cache.t2.micro",
+        "cache.t2.small",
+        "cache.t2.medium",
+        "cache.m3.medium",
+        "cache.m3.large",
+        "cache.m3.xlarge",
+        "cache.m3.2xlarge",
+        "cache.r3.large",
+        "cache.r3.xlarge",
+        "cache.r3.2xlarge",
+        "cache.r3.4xlarge",
+        "cache.r3.8xlarge"
+      ]
     },
     "ApplicationName": {
       "Description": "The name of the Elastic Beanstalk Application",
       "Type": "String",
       "Default": "django-VPC"
+    },
+    "DeveloperName": {
+      "Type": "String",
+      "Default": "Default"
+    },
+    "EnvironmentName": {
+      "Type": "String",
+      "Default": "Dev-VPC"
+    },
+    "ElasticsearchDomainCustomResourceLambdaName": {
+      "Type": "String",
+      "Default": "cfn-elasticsearch-domain-0-1-1",
+      "Description": "The name of the ElasticseachDomain Lambda you deployed to test this stack."
+    },
+    "ElasticsearchDomainName": {
+      "Type": "String",
+      "Default": "djangosearch",
+      "Description": "The name of the Elasticsearch Domain you will launch",
+      "AllowedPattern": "[a-z][a-z0-9\\-]+"
+    },
+    "ElasticsearchDomainClusterNodeCount": {
+      "Type": "Number",
+      "Default": "1",
+      "Description": "Number of nodes to build into the Elasticsearch Domain Cluster."
+    },
+    "ElasticsearchDomainClusterNodeSize": {
+      "Type": "String",
+      "Description": "Size of nodes to build into the Elasticsearch Domain Cluster.",
+      "Default": "t2.micro.elasticsearch",
+      "AllowedValues": [
+        "m3.medium.elasticsearch",
+        "m3.large.elasticsearch",
+        "m3.xlarge.elasticsearch",
+        "m3.2xlarge.elasticsearch",
+        "t2.micro.elasticsearch",
+        "t2.small.elasticsearch",
+        "t2.medium.elasticsearch",
+        "r3.large.elasticsearch",
+        "r3.xlarge.elasticsearch",
+        "r3.2xlarge.elasticsearch",
+        "r3.4xlarge.elasticsearch",
+        "r3.8xlarge.elasticsearch",
+        "i2.xlarge.elasticsearch",
+        "i2.2xlarge.elasticsearch"
+      ]
+    },
+    "ServerEmail" : {
+      "Description" : "Email address django sends email from",
+      "Type": "String"
+    },
+    "AdminEmail" : {
+      "Description" : "Email address django sends error emails to",
+      "Type": "String"
     }
   },
 
@@ -118,8 +232,6 @@
         "Parameters" : {
           "KeyName": { "Ref" : "KeyName" },
           "SSHFrom": { "Ref" : "SSHFrom" },
-          "BastionInstanceType": { "Ref" : "BastionInstanceType" },
-          "NATInstanceType" : { "Ref" : "NATInstanceType"},
           "VPCAvailabilityZone1": { "Ref" : "VPCAvailabilityZone1" },
           "VPCAvailabilityZone2": { "Ref" : "VPCAvailabilityZone2" }
         }
@@ -132,11 +244,27 @@
         "Parameters" : {
           "DatabaseUser": { "Ref" : "DatabaseUser" },
           "DatabasePassword": { "Ref" : "DatabasePassword" },
-          "DatabaseName": { "Ref" : "DatabaseName" },          
+          "DatabaseName": { "Ref" : "DatabaseName" },
+          "DatabaseInstanceType": { "Ref" : "DatabaseInstanceType" },      
+          "CacheInstanceType": { "Ref" : "CacheInstanceType" },                  
           "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
+          "ElasticsearchDomainCustomResourceLambdaName": { "Ref" : "ElasticsearchDomainCustomResourceLambdaName" },
+          "ElasticsearchDomainName": { "Ref" : "ElasticsearchDomainName" },
+          "ElasticsearchDomainClusterNodeCount": { "Ref" : "ElasticsearchDomainClusterNodeCount" },
+          "ElasticsearchDomainClusterNodeSize": { "Ref" : "ElasticsearchDomainClusterNodeSize" },
           "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
-          "PrivateSubnet1" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"] },
-          "PrivateSubnet2" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"] }
+          "PrivateSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"]
+          },
+          "PrivateSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"]
+          },
+          "PublicSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet1"]
+          },
+          "PublicSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet2"]
+          }
         }
       }
     },
@@ -145,25 +273,40 @@
       "Properties" : {
         "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "AppTemplateKey" }]]},
         "Parameters" : {
+          "DeveloperName"     : { "Ref" : "DeveloperName"},
+          "ApplicationName"  : { "Ref" : "ApplicationName" },
+          "VersionDescription"  : { "Ref" : "VersionDescription" },
+          "EnvironmentName"     : { "Ref" : "EnvironmentName"},
+          "ServerEmail"     : { "Ref" : "ServerEmail"},
+          "AdminEmail"     : { "Ref" : "AdminEmail"},
           "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
-          "CacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.CacheEndpoint" ]},
-          "CachePort"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.CachePort" ]},
-          "AppBucket"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.AppBucket" ]},
+          "MemCacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCacheEndpoint" ]},
+          "MemCachePort"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.MemCachePort" ]},
+          "RedisCacheId"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.RedisCacheId" ]},
+          "ElasticsearchDomainEndpoint" : { "Fn::GetAtt" : [ "AppResources", "Outputs.ElasticsearchDomainEndpoint" ]},
           "DatabaseName"     : { "Ref" : "DatabaseName"},
           "DatabaseUser"     : { "Ref" : "DatabaseUser"},
           "DatabasePassword" : { "Ref" : "DatabasePassword" },
+          "DatabaseHost"     : { "Fn::GetAtt" : [ "AppResources", "Outputs.DatabaseHost" ]},
+          "DatabasePort" : { "Fn::GetAtt" : [ "AppResources", "Outputs.DatabasePort" ]},
+          "MediaBucket"  : { "Fn::GetAtt" : [ "AppResources", "Outputs.MediaBucket" ]},
           "AssetsBucketPrefix"  : { "Ref" : "AssetsBucketPrefix" },
           "AppZIPFile"           : { "Ref" : "AppZIPFile"},
           "KeyName"          : { "Ref" : "KeyName" },
           "InstanceType"     : { "Ref" : "InstanceType"},
-          "ApplicationName"  : { "Ref" : "ApplicationName" },
           "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
           "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
-          "PrivateSubnets" : {
-            "Fn::Join": [",", [{ "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"] }, { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"] }]]
+          "PrivateSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"]
           },
-          "PublicSubnets" : {
-            "Fn::Join": [",", [{ "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet1"] }, { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet2"] }]]
+          "PrivateSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"]
+          },
+          "PublicSubnet1" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet1"]
+          },
+          "PublicSubnet2" : {
+            "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet2"]
           }
         }
       }

@@ -7,13 +7,16 @@
     "RdsDbId": {
       "Type": "String"
     },
-    "AppBucket": {
+    "MemCacheEndpoint": {
       "Type": "String"
     },
-    "CacheEndpoint": {
+    "MemCachePort": {
       "Type": "String"
     },
-    "CachePort": {
+    "RedisCacheId": {
+      "Type": "String"
+    },
+    "ElasticsearchDomainEndpoint": {
       "Type": "String"
     },
     "DatabaseUser": {
@@ -24,6 +27,17 @@
       "NoEcho": "true",
       "Type": "String"
     },
+    "DatabaseHost": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "DatabasePort": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "MediaBucket": {
+      "Type": "String"
+    },
     "AssetsBucketPrefix": {
       "Type": "String"
     },
@@ -31,13 +45,59 @@
       "Type": "String"
     },
     "KeyName": {
-      "Type": "String"
+      "Type": "AWS::EC2::KeyPair::KeyName"
     },
     "InstanceType": {
-      "Type": "String"
+      "Type": "String",
+      "Default" : "t2.micro",
+      "AllowedValues" : [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m4.10xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "g2.2xlarge",
+        "g2.8xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge",
+        "d2.xlarge",
+        "d2.2xlarge",
+        "d2.4xlarge",
+        "d2.8xlarge"
+       ]
     },
     "ApplicationName": {
       "Type": "String"
+    },
+    "VersionDescription": {
+      "Description": "VersionDescription of application zip",
+      "Type": "String",
+      "Default": "Initial Version"
     },
     "DatabaseName": {
       "Type": "String"
@@ -57,32 +117,54 @@
       "Type" : "String",
       "Description" : "The VPC ID to launch the application into."
     },
-    "PublicSubnets" : {
-      "Type" : "String",
-      "Description" : "A comma-delimited list of public VPC subnets. ELBs will be launched into this subnet."
+    "PrivateSubnet1" : {
+      "Description" : "A private VPC subnet ID.",
+      "Type": "String"
     },
-    "PrivateSubnets" : {
-      "Type" : "String",
-      "Description" : "A comma-delimited list of private VPC subnets. Auto Scaling and RDS will be launched into this subnet."
+    "PrivateSubnet2" : {
+      "Description" : "A private VPC subnet ID. Must be in a different AZ than PrivateSubnet1",
+      "Type": "String"
+    },
+    "PublicSubnet1" : {
+      "Description" : "A public VPC subnet ID.",
+      "Type": "String"
+    },
+    "PublicSubnet2" : {
+      "Description" : "A public VPC subnet ID. Must be in a different AZ than PublicSubnet1",
+      "Type": "String"
+    },
+    "ServerEmail" : {
+      "Description" : "Email address django sends email from",
+      "Type": "String"
+    },
+    "AdminEmail" : {
+      "Description" : "Email address django sends error emails to",
+      "Type": "String"
     }
+
   },
 
   "Resources": {
+
     "Application": {
       "Type": "AWS::ElasticBeanstalk::Application",
       "Properties": {
         "Description": {
           "Ref": "ApplicationName"
         },
-        "ApplicationName" : { "Fn::Join" : ["-", [{ "Ref": "ApplicationName" }, {"Ref": "DeveloperName"}]] },
+        "ApplicationName" : { "Ref": "ApplicationName" },
         "ConfigurationTemplates": [{
           "TemplateName": "DefaultConfiguration",
           "Description": "Default Configuration Version 1.0 - with SSH access",
-          "SolutionStackName": "64bit Amazon Linux running Python 2.7",
+          "SolutionStackName": "64bit Amazon Linux 2015.09 v2.0.6 running Python 2.7",
           "OptionSettings": [{
             "Namespace": "aws:elasticbeanstalk:application:environment",
             "OptionName": "AWS_REGION",
             "Value": { "Ref": "AWS::Region" }
+          }, {
+            "Namespace": "aws:elasticbeanstalk:environment",
+            "OptionName": "EnvironmentType",
+            "Value": "SingleInstance"
           }, {
             "Namespace": "aws:autoscaling:launchconfiguration",
             "OptionName": "EC2KeyName",
@@ -97,12 +179,7 @@
           {
             "Namespace": "aws:ec2:vpc",
             "OptionName": "Subnets",
-            "Value": { "Ref" : "PrivateSubnets" }
-          },
-          {
-            "Namespace": "aws:ec2:vpc",
-            "OptionName": "ELBSubnets",
-            "Value": { "Ref" : "PublicSubnets" }
+            "Value": { "Ref" : "PublicSubnet1" }
           },
           {
             "Namespace": "aws:autoscaling:launchconfiguration",
@@ -119,34 +196,49 @@
             "OptionName": "InstanceType",
             "Value": { "Ref": "InstanceType" }
           }]
-        }],
-        "ApplicationVersions": [{
-          "VersionLabel": "Initial Version",
-          "Description": "Initial Version",
-          "SourceBundle": {
-            "S3Bucket": {
-              "Fn::Join": ["", [{
-                "Ref": "AssetsBucketPrefix"
-              }, {
-                "Ref": "AWS::Region"
-              }]]
-            },
-            "S3Key": {
-              "Ref": "AppZIPFile"
-            }
-          }
         }]
+      }
+    },
+    "ApplicationVersion": {
+      "Type" : "AWS::ElasticBeanstalk::ApplicationVersion",
+      "Properties" : {
+        "ApplicationName": { "Ref": "Application"},
+        "Description": { "Ref": "VersionDescription" },
+        "SourceBundle": {
+          "S3Bucket": {
+            "Fn::Join": ["", [{
+              "Ref": "AssetsBucketPrefix"
+            }, {
+              "Ref": "AWS::Region"
+            }]]
+          },
+          "S3Key": {
+            "Ref": "AppZIPFile"
+          }
+        }
       }
     },
     "Environment": {
       "Type": "AWS::ElasticBeanstalk::Environment",
       "Properties": {
         "ApplicationName": { "Ref": "Application"},
-        "EnvironmentName" : { "Fn::Join" : ["-", [ { "Ref": "EnvironmentName" }, {"Ref": "DeveloperName"}]] },
+        "EnvironmentName" : { "Ref": "EnvironmentName" },
         "Description": "Default Environment",
-        "VersionLabel": "Initial Version",
+        "VersionLabel": { "Ref": "ApplicationVersion" },
         "TemplateName": "DefaultConfiguration",
         "OptionSettings": [{
+          "Namespace": "aws:ec2:vpc",
+          "OptionName": "AssociatePublicIpAddress",
+          "Value": true
+        },
+        {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AWS_STORAGE_BUCKET_NAME",
+          "Value": {
+            "Ref": "MediaBucket"
+          }
+        },
+        {
           "Namespace": "aws:elasticbeanstalk:application:environment",
           "OptionName": "RDS_INSTANCEID",
           "Value": {
@@ -154,33 +246,69 @@
           }
         }, {
           "Namespace": "aws:elasticbeanstalk:application:environment",
-          "OptionName": "RDS_DATABASE",
+          "OptionName": "RDS_DB_NAME",
           "Value": {
             "Ref": "DatabaseName"
           }
         }, {
           "Namespace": "aws:elasticbeanstalk:application:environment",
-          "OptionName": "RDS_USERNAME",
+          "OptionName": "RDS_DB_USERNAME",
           "Value": {
             "Ref": "DatabaseUser"
           }
         }, {
           "Namespace": "aws:elasticbeanstalk:application:environment",
-          "OptionName": "RDS_PASSWORD",
+          "OptionName": "RDS_DB_PASSWORD",
           "Value": {
             "Ref": "DatabasePassword"
           }
         }, {
           "Namespace": "aws:elasticbeanstalk:application:environment",
-          "OptionName": "CACHE_ENDPOINT",
+          "OptionName": "RDS_DB_HOST",
           "Value": {
-            "Ref": "CacheEndpoint"
+            "Ref": "DatabaseHost"
           }
-        },{
+        }, {
           "Namespace": "aws:elasticbeanstalk:application:environment",
-          "OptionName": "CACHE_PORT",
+          "OptionName": "RDS_DB_PORT",
           "Value": {
-            "Ref": "CachePort"
+            "Ref": "DatabasePort"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "MEMCACHE_ENDPOINT",
+          "Value": {
+            "Ref": "MemCacheEndpoint"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "MEMCACHE_PORT",
+          "Value": {
+            "Ref": "MemCachePort"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ELASTICSEARCH_ENDPOINT",
+          "Value": {
+            "Ref": "ElasticsearchDomainEndpoint"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "REDIS_ID",
+          "Value": {
+            "Ref": "RedisCacheId"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "SERVER_EMAIL",
+          "Value": {
+            "Ref": "ServerEmail"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ADMIN_EMAIL",
+          "Value": {
+            "Ref": "AdminEmail"
           }
         }]
       }
