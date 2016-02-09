@@ -337,6 +337,7 @@
 
     "MyEIP1": {
       "Type" : "AWS::EC2::EIP",
+      "DependsOn": "PrivateSubnet1",
       "Properties" : {
         "Domain" : "vpc"
       }
@@ -344,6 +345,7 @@
 
     "MyEIP2": {
       "Type" : "AWS::EC2::EIP",
+      "DependsOn": "PrivateSubnet2",
       "Properties" : {
         "Domain" : "vpc"
       }
@@ -351,6 +353,7 @@
 
     "MyNatgateway1": {
       "Type": "Custom::Natgateway",
+      "DependsOn": "MyEIP1",
       "Properties": {
         "ServiceToken": {
           "Fn::Join": [
@@ -383,6 +386,7 @@
 
     "MyNatgateway2": {
       "Type": "Custom::Natgateway",
+      "DependsOn": "MyEIP2",
       "Properties": {
         "ServiceToken": {
           "Fn::Join": [
@@ -529,7 +533,7 @@
 
     "PrivateRoute1": {
       "Type": "AWS::EC2::Route",
-      "DependsOn": "GatewayToInternet",
+      "DependsOn": "MyNatgateway1",
       "Properties": {
         "RouteTableId": {
           "Ref": "PrivateRouteTable1"
@@ -543,7 +547,7 @@
 
     "PrivateRoute2": {
       "Type": "AWS::EC2::Route",
-      "DependsOn": "GatewayToInternet",
+      "DependsOn": "MyNatgateway2",
       "Properties": {
         "RouteTableId": {
           "Ref": "PrivateRouteTable2"
