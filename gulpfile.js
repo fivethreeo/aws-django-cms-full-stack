@@ -6,6 +6,7 @@ var less = require('gulp-less');
 var sourcemaps = require('gulp-sourcemaps');
 var spawn = require('cross-spawn-async');
 var prompt = require('prompt');
+var async = require('async');
 
 gulp.task('less', function () {
   var LessPluginCleanCSS = require("less-plugin-clean-css"),
@@ -69,20 +70,50 @@ gulp.task('build', ['js', 'less', 'copy'], function () {
    
 });
 
-gulp.task('deploy_lambda_resource', function () {
+gulp.task('deploy_lambda_resources', function (callback) {
 
+    var cfnlambda = require('cfn-lambda');
     var config = require('./config.json');
     var format = require('string-format');
-    var deploy = require(path.join(
-      __dirname,
-      'tools',
-      'deploy'));
 
-    return deploy(
-      config.region, [config.region], function (res) {
-          console.log(format(res, config.region));
+    async.waterfall([
+      function(cb) {
+        return cfnlambda.deploy(
+          'cfn-elasticsearch-domain',
+          config.region,
+          [config.region],
+          function (res) {
+              cb(null);
+          }
+        );
+      },
+      function(cb) {
+        return cfnlambda.deploy(
+          'cfn-natgateway',
+          config.region,
+          [config.region],
+          function (res) {
+              cb(null);
+          }
+        );
+      },
+      function(cb) {
+        return cfnlambda.deploy(
+          'cfn-natroute',
+          config.region,
+          [config.region],
+          function (res) {
+              cb(null);
+          }
+        );
       }
-    );
+    ],
+    function() {
+      console.log("All lambdas deployed!");
+      callback();
+    });
+
+    
 });
 
 gulp.task('configure', function (callback) {

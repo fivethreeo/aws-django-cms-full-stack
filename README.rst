@@ -7,7 +7,7 @@ A full django stack with django cms
 * aws managed memcache
 * aws managed postgres db
 
-WIP: Making a HA setup in cloudformation/vpc-nat-ha, using aws managed nat.
+WIP: Making a HA setup in cloudformation/vpc-nat-ha, using aws managed nat (vpc complete now).
 
 To deploy existing app in django/
 =================================
@@ -20,7 +20,7 @@ Install `nodejs`_ or `io.js`_ and `Python`_.
   npm install
   aws configure
   gulp configure
-  gulp deploy_lambda_resource
+  gulp deploy_lambda_resources
   gulp deploy_full_stack
 
 Full deploy takes about 30 min, lambda resource for elasticsearch is slow.
