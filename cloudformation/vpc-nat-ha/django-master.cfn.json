@@ -32,6 +32,16 @@
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
     },
+    "NatgatewayCustomResourceLambdaName": {
+      "Type": "String",
+      "Default": "cfn-natgateway-0-1-1",
+      "Description": "The name of the Natgateway Lambda you deployed to test this stack."
+    },
+    "NatrouteCustomResourceLambdaName": {
+      "Type": "String",
+      "Default": "cfn-natroute-0-1-1",
+      "Description": "The name of the Natroute Lambda you deployed to test this stack."
+    },
     "VPCAvailabilityZone1": {
       "Description": "One of two Availability Zones that will be used to create subnets.",
       "Type": "AWS::EC2::AvailabilityZone::Name"
@@ -261,7 +271,9 @@
           "KeyName": { "Ref" : "KeyName" },
           "SSHFrom": { "Ref" : "SSHFrom" },
           "VPCAvailabilityZone1": { "Ref" : "VPCAvailabilityZone1" },
-          "VPCAvailabilityZone2": { "Ref" : "VPCAvailabilityZone2" }
+          "VPCAvailabilityZone2": { "Ref" : "VPCAvailabilityZone2" },
+          "NatgatewayCustomResourceLambdaName": { "Ref" : "NatgatewayCustomResourceLambdaName" },
+          "NatrouteCustomResourceLambdaName": { "Ref" : "NatrouteCustomResourceLambdaName" }
         }
       }
     },

@@ -27,6 +27,11 @@
       "Default": "cfn-natgateway-0-1-1",
       "Description": "The name of the Natgateway Lambda you deployed to test this stack."
     },
+    "NatrouteCustomResourceLambdaName": {
+      "Type": "String",
+      "Default": "cfn-natroute-0-1-1",
+      "Description": "The name of the Natroute Lambda you deployed to test this stack."
+    },
     "VPCAvailabilityZone1": {
       "Description": "One of two Availability Zones that will be used to create subnets.",
       "Type": "AWS::EC2::AvailabilityZone::Name"
@@ -536,7 +541,9 @@
                 "Ref": "AWS::AccountId"
               },
               "function",
-              "cfn-natroute-0-1-1"
+              {
+                "Ref": "NatrouteCustomResourceLambdaName"
+              }
             ]
           ]
         },
@@ -568,7 +575,9 @@
                 "Ref": "AWS::AccountId"
               },
               "function",
-              "cfn-natroute-0-1-1"
+              {
+                "Ref": "NatrouteCustomResourceLambdaName"
+              }
             ]
           ]
         },
