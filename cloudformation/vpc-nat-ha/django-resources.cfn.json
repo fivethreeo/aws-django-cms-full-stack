@@ -50,6 +50,34 @@
         "db.r3.8xlarge"
       ]
     },
+    "MultiAZDatabase" : {
+      "Description" : "Use MultiAZ RDS DB",
+      "Default": "true",
+      "Type" : "String",
+      "AllowedValues" : [
+        "false",
+        "true"
+      ]
+    },
+    "ZoneAwareElasticsearch" : {
+      "Description" : "Use ZoneAware Elasticsearch",
+      "Default": "true",
+      "Type" : "String",
+      "AllowedValues" : [
+        "false",
+        "true"
+      ]
+    },
+    "NumMemcacheNodes": {
+      "Type": "Number",
+      "Default": "2",
+      "Description": "Number of nodes to build into the Memcache Cluster."
+    },
+    "NumRedisCacheNodes": {
+      "Type": "Number",
+      "Default": "2",
+      "Description": "Number of nodes to build into the Redis Cluster."
+    },
     "CacheInstanceType" : {
       "Description" : "Memcached instance type",
       "Default": "cache.t2.micro",
@@ -159,30 +187,6 @@
         }
       }
     },
-
-    "CacheSubnetGroup" : {
-        "Type" : "AWS::ElastiCache::SubnetGroup",
-        "Properties" : {
-            "Description" : "Cache Subnet Group",
-            "SubnetIds": [{
-              "Ref": "PublicSubnet1"
-            }, {
-              "Ref": "PublicSubnet2"
-            }]
-        }
-    },
-
-    "MemCacheParameters" : {
-          "Type" : "AWS::ElastiCache::ParameterGroup",
-          "Properties" : {
-            "CacheParameterGroupFamily" : "memcached1.4",
-            "Description" : "Parameter group",
-            "Properties" : {
-              "cas_disabled" : "1"
-            }
-          }
-        },
-
     "CacheSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
@@ -205,7 +209,30 @@
           }
         }]
       }      
-    },  
+    },
+
+    "CacheSubnetGroup" : {
+      "Type" : "AWS::ElastiCache::SubnetGroup",
+      "Properties" : {
+        "Description" : "Cache Subnet Group",
+        "SubnetIds": [
+          { "Ref": "PrivateSubnet1" },
+          { "Ref": "PrivateSubnet2" }
+        ]
+      }
+    },
+
+    "MemCacheParameters" : {
+      "Type" : "AWS::ElastiCache::ParameterGroup",
+      "Properties" : {
+        "CacheParameterGroupFamily" : "memcached1.4",
+        "Description" : "Parameter group",
+        "Properties" : {
+          "cas_disabled" : "1"
+        }
+      }
+    },
+
 
     "MemCacheCluster" : {
       "Type": "AWS::ElastiCache::CacheCluster",
@@ -214,7 +241,7 @@
         "CacheNodeType"        : { "Ref" : "CacheInstanceType" },
         "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
         "Engine"               : "memcached",
-        "NumCacheNodes"        : "1"
+        "NumCacheNodes"        : { "Ref" : "NumMemcacheNodes" }
       }
     },
 
@@ -225,7 +252,7 @@
         "CacheNodeType"        : { "Ref" : "CacheInstanceType" },
         "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
         "Engine"               : "redis",
-        "NumCacheNodes"        : "1"
+        "NumCacheNodes"        : { "Ref" : "NumRedisCacheNodes" }
       }
     },
     "MyElasticsearchDomain": {
@@ -280,7 +307,8 @@
           },
           "InstanceType": {
             "Ref": "ElasticsearchDomainClusterNodeSize"
-          }
+          },
+          "ZoneAwarenessEnabled": { "Ref": "ZoneAwareElasticsearch"  }
         },
         "EBSOptions": {
           "EBSEnabled": true,
@@ -318,11 +346,10 @@
       "Type": "AWS::RDS::DBSubnetGroup",
       "Properties": {
         "DBSubnetGroupDescription": "RDS DB Subnet group",
-        "SubnetIds": [{
-          "Ref": "PublicSubnet1"
-        }, {
-          "Ref": "PublicSubnet2"
-        }]
+        "SubnetIds": [
+          { "Ref": "PrivateSubnet1" },
+          { "Ref": "PrivateSubnet2" }
+        ]
       }
     },
 
@@ -348,7 +375,8 @@
         }],
         "DBSubnetGroupName": {
           "Ref": "DBSubnetGroup"
-        }
+        },
+        "MultiAZ": { "Ref": "MultiAZDatabase"  }
       }
     }
   },

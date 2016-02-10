@@ -145,6 +145,34 @@
         "db.r3.8xlarge"
       ]
     },
+    "MultiAZDatabase" : {
+      "Description" : "Use MultiAZ RDS DB",
+      "Default": "false",
+      "Type" : "String",
+      "AllowedValues" : [
+        "false",
+        "true"
+      ]
+    },
+    "ZoneAwareElasticsearch" : {
+      "Description" : "Use ZoneAware Elasticsearch",
+      "Default": "false",
+      "Type" : "String",
+      "AllowedValues" : [
+        "false",
+        "true"
+      ]
+    },
+    "NumMemcacheNodes": {
+      "Type": "Number",
+      "Default": "1",
+      "Description": "Number of nodes to build into the Memcache Cluster."
+    },
+    "NumRedisCacheNodes": {
+      "Type": "Number",
+      "Default": "1",
+      "Description": "Number of nodes to build into the Redis Cluster."
+    },
     "CacheInstanceType" : {
       "Description" : "RDS DB instance type",
       "Default": "cache.t2.micro",
@@ -252,6 +280,10 @@
           "ElasticsearchDomainName": { "Ref" : "ElasticsearchDomainName" },
           "ElasticsearchDomainClusterNodeCount": { "Ref" : "ElasticsearchDomainClusterNodeCount" },
           "ElasticsearchDomainClusterNodeSize": { "Ref" : "ElasticsearchDomainClusterNodeSize" },
+          "ZoneAwareElasticsearch": { "Ref" : "ZoneAwareElasticsearch" },
+          "MultiAZDatabase": { "Ref" : "MultiAZDatabase" },
+          "NumMemcacheNodes": { "Ref" : "NumMemcacheNodes" },
+          "NumRedisCacheNodes": { "Ref" : "NumRedisCacheNodes" },
           "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
           "PrivateSubnet1" : {
             "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"]

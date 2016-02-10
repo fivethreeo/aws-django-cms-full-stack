@@ -164,7 +164,7 @@
           }, {
             "Namespace": "aws:elasticbeanstalk:environment",
             "OptionName": "EnvironmentType",
-            "Value": "SingleInstance"
+            "Value": "LoadBalanced"
           }, {
             "Namespace": "aws:autoscaling:launchconfiguration",
             "OptionName": "EC2KeyName",
@@ -179,7 +179,18 @@
           {
             "Namespace": "aws:ec2:vpc",
             "OptionName": "Subnets",
-            "Value": { "Ref" : "PublicSubnet1" }
+            "Value": { "Fn::Join": [ ",",
+              { "Ref" : "PrivateSubnet1" },
+              { "Ref" : "PrivateSubnet2" }
+            ]}
+          },
+          {
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "ELBSubnets",
+            "Value": { "Fn::Join": [ ",",
+              { "Ref" : "PublicSubnet1" },
+              { "Ref" : "PublicSubnet2" }
+            ]}
           },
           {
             "Namespace": "aws:autoscaling:launchconfiguration",
@@ -227,11 +238,6 @@
         "VersionLabel": { "Ref": "ApplicationVersion" },
         "TemplateName": "DefaultConfiguration",
         "OptionSettings": [{
-          "Namespace": "aws:ec2:vpc",
-          "OptionName": "AssociatePublicIpAddress",
-          "Value": true
-        },
-        {
           "Namespace": "aws:elasticbeanstalk:application:environment",
           "OptionName": "AWS_STORAGE_BUCKET_NAME",
           "Value": {
