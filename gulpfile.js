@@ -142,8 +142,6 @@ gulp.task('build', ['js', 'less', 'copy'], function () {
 });
 
 gulp.task('configure', function (callback) {
-  require(path.join(__dirname, 'tools', 'config'))(callback);
-  /*
   prompt.start();
   prompt.get([{
     name: 'project_name',
@@ -176,7 +174,7 @@ gulp.task('configure', function (callback) {
       return callback();
     });
   });
-*/
+  
 });
 
 
