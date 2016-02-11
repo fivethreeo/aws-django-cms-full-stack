@@ -47,7 +47,8 @@ ul.rot li:nth-child(3n+3) {-moz-transform: rotate(3deg);-webkit-transform: rotat
    width: 100%;
    height: 100%;
 }
-.square-content a {
+.square-content div > a, 
+.square-content div > span {
     display: table-cell;
     text-align: center;
     vertical-align: middle;
@@ -99,6 +100,7 @@ ul.rot li:nth-child(3n+3) {-moz-transform: rotate(3deg);-webkit-transform: rotat
   position: absolute;
   bottom: 30px;
 }
+
 @media (max-height: 667) {
   .arrow { display: none; }
 }

@@ -2,6 +2,7 @@ var express = require("express");
 var path = require('path');
 
 var staticdir = 'static';
+var cfn_dir = path.join(path.dirname(path.dirname(__dirname)), 'cloudformation');
 
 module.exports = function(callback) {
 
@@ -21,6 +22,18 @@ module.exports = function(callback) {
 	  )
 	});
 
+	app.get('/params', function (req, res) {
+	  var params = {};
+
+	  try {
+        params = require(path.join(cfn_dir, 'vpc-' + req.query.setup, 'django-master.cfn.json'));
+      } catch (e) {
+        console.log(e);
+      }
+
+      return res.json(params);
+
+	});
 	var port = 4000;
 	var ip = "127.0.0.1";
 
