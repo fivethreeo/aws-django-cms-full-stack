@@ -69,6 +69,8 @@ gulp.task('deploy_full_stack', function (callback) {
 
 gulp.task('js', function (callback) {
 
+  var requirejs = require('requirejs');
+
   var config = {
       baseUrl: 'assets',
       name: 'main',
