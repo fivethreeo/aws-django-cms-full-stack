@@ -72,7 +72,7 @@ gulp.task('js', function (callback) {
   var config = {
       baseUrl: 'assets',
       name: 'main',
-      include: ['requireLib'],
+      include: ['requireLib', 'text'],
       optimize: "uglify",
       out: 'django/testproject/static/js/main.js',
       // The shim config allows us to configure dependencies for
@@ -187,7 +187,7 @@ gulp.task('config_js', function (callback) {
   var config = {
       baseUrl: 'assets',
       name: 'config/main',
-      include: ['requireLib'],
+      include: ['requireLib', 'text'],
       optimize: "uglify",
       out: 'tools/config/main.js',
       // The shim config allows us to configure dependencies for
